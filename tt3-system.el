@@ -593,7 +593,7 @@
 																	;; header部 を切り出しalist化し、response-headerとして返す。　バッファー(tt3-http-response-buffer)にはbody部が返る。
 																	(goto-char (point-min)) (re-search-forward "\n\n") ;; 最初の改行x2がheader-body境界
 																	(setq response-header (split-string (buffer-substring (point) (point-min)) "\n"))
-																	(delete-region (+ 2 (point)) (point-min))                                       ;; どうして+2が必要なのか不明
+																	(delete-region (point) (point-min))
 																	(setq response (cons (cons "Buffer" (current-buffer))                           ;; ("Buffer" . "buffer-name")
 																											 (loop for lin in response-header
 																														 if (string-match "\\(: \\|HTTP\\)" lin)

@@ -319,7 +319,10 @@ class ThinktankRoot < ThinktankTime
   end
   private :>>
   
-  def create_memo! ( id, content ) self << ThinktankMemo.create_memo( self, id, content ) end
+  def create_memo! ( id, content )
+    self << ( memo = ThinktankMemo.create_memo( self, id, content ) )
+    memo
+  end
   
   def delete_memo! ( id )
     memo = self.ThinktankMemo[ id ]
@@ -357,8 +360,8 @@ class ThinktankRoot < ThinktankTime
     else
       File.delete( snappath ) if File.exist?( snappath )
       File.delete( diffpath ) if File.exist?( diffpath )
-      memo
     end
+    memo
   end
   
   def verup_memo!( id, content, type )

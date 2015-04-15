@@ -8,7 +8,7 @@ require 'webrick'
 require 'benchmark'
 require 'socket'
 
-require 'strscan'
+# require 'strscan'
 require 'json'
 require 'uri'
 require 'erb'
@@ -53,12 +53,12 @@ def execute_server ()
     when "show"    then memo  = thinktank.get_memo( req.id )
     when "update"  then memo  = thinktank.update_memo!( req.id, req.body )
     when "destroy" then memo  = thinktank.delete_memo!( req.id )
-    when "create"  then memo  = thinktank.create_memo!( req.id, req.body )
+    when "create"  then memo  = thinktank.create_memo!( req.id, req.body )     # ここにはこない createもupdateで処理している 
     when "index"   then index = thinktank.index_object( req.lookup, req.body )
     end
     
     res['Content-Type'] = "text/#{req.fmt};charset=utf-8"
-    res['filename']     = ( memo.filename || "no name" )
+    res['filename']     = ( memo.filename rescue "no name" )
     res.body = ERB.new( IO.read( req.erbpath ), nil, '-' ).result( binding ) if req.erbpath  # erb変換結果が返る
     memo = index = nil
   }

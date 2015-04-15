@@ -73,6 +73,7 @@
 								(thinktank-minor-mode 1)
 								(current-buffer)))))))
 
+
 																				;
 																				; メモを表示する：　バッファーをアクティベートする
 																				;
@@ -389,11 +390,9 @@
 				 (template-oneline (thinktank3-config :template-oneline))
 				 (res (tt3-resource-save-memo :content (format-time-string template-memo) :mode :create)))
 
-		(msgbox "ega")
 		(switch-to-buffer (assoc-default "Buffer" res))
 		(rename-buffer (thinktank3-format :memofile (assoc-default "Filename" res)))
 		(thinktank-minor-mode 1)
-		(msgbox "ega2")
 		(goto-char (point-min))
 		(search-forward "?") (backward-char) (delete-char 1)
 		))

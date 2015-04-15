@@ -31,7 +31,7 @@
 				( "M|Memo B|Browse" :context "ext:howm" :command thinktank3-mozrepl-browse-memo :help "メモをbrowse")
 				( "M|Memo W|winword" :context "ext:howm" :command thinktank3-mozrepl-memo-docx :help "wordファイルを表示")
 				( "M|Memo M|Home" :command thinktank3-resource-show-top-memo :help "トップページ" )                              ;;;;;;;; tt3 OK
-				( "M|Memo N|New" :command thinktank3-resource-create-memo :help "新しいメモを作成" )      
+				( "M|Memo N|New" :command thinktank3-resource-create-memo :help "新しいメモを作成" )                             ;;;;;;;; tt3 OK
 				( "M|Memo S|Save" :command thinktank3-resource-update-memo :help "メモを保存" )    
 				( "M|Memo X|Close" :command kill-buffer :help "メモを閉じる")
 				( "M|Memo R|Save-Region" :command thinktank3-resource-create-memo-from-region :help "選択領域を新規memoとして保存する")
