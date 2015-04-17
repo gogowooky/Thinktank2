@@ -10,16 +10,16 @@
 		(define-key map (kbd "C-/") 'thinktank3-menu-show-tree-menu)
 		(define-key map (kbd "C-?") 'thinktank3-menu-show-list-menu)
 		(define-key map (kbd "C-q") '(lambda nil (interactive) (kill-buffer)))
-
 		(define-key map (kbd "C-M-/") 'thinktank3-resource-show-web-url-list)
 		(define-key map (kbd "M-/")   'thinktank3-resource-show-web-url-tree)
-
 		(define-key map (kbd "M-P")   'org-backward-heading-same-level)
 		(define-key map (kbd "M-N")   'org-forward-heading-same-level)
 
 		(thinktank3-dnd-initialize)
 
 		map))
+
+(setq frame-title-format (format "emacs@%s -- TT3 <%%b>" (system-name)))
 
 ;; ---------------------------------------------------------------------------------------------------------------------------------
 ;; button-lock
@@ -37,15 +37,6 @@
 (define-minor-mode thinktank-minor-mode "ThinkTankマイナーモード" :lighter " TT" :global t :init-value t
 	(unless (equal major-mode 'org-mode) (org-mode)	(helm-mode))
 
-	;; xxxx-xx-xx-xxxxxx.howm::......
-	;;(button-lock-set-button "\\([0-9][0-9][0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9][0-9][0-9][0-9][0-9]\\.howm\\)\\(::[^ 　\t\n]+\\)?"
-	;;												'(lambda () (interactive) (let (ext)
-	;;																										(setq ext (apply 'buffer-substring (button-lock-find-extent)))
-	;;																										(string-match "\\([0-9][0-9][0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9][0-9][0-9][0-9][0-9]\\.howm\\)\\(::[^ 　\t\n]+\\)?" ext)
-	;;																										(tt3-resource-show-memo :memoid (match-string 1 ext) :jump (match-string 2 ext))))
-	;;												:keyboard-binding "RET"
-	;;												:face 'thinktank-button-lock-face)
-
 	;; xxxx-xx-xx-xxxxxx.howm
 	(button-lock-set-button "[0-9][0-9][0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9][0-9][0-9][0-9][0-9]\\.howm"
 													'(lambda () (interactive) (tt3-resource-show-memo :memoid (apply 'buffer-substring (button-lock-find-extent)) t))
@@ -57,15 +48,6 @@
 													'(lambda () (interactive) (thinktank3-resource-create-memo-link))
 													:keyboard-binding "RET"
 													:face 'thinktank-button-lock-face))
-
-;; thinktank-mode initialize
-;(add-to-list 'auto-mode-alist '("\\.howm$" . (lambda ()	(thinktank-minor-mode 1))))
-
-
-;; ---------------------------------------------------------------------------------------------------------------------------------
-;; minor-mode定義
-;; ---------------------------------------------------------------------------------------------------------------------------------
-
 
 (defvar thinktank3-util-user-directories (thinktank3-property (concat "Directories.directory@" (upcase (system-name)))))
 

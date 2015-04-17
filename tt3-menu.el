@@ -50,6 +50,7 @@
 				( "U|Usability E|Emacs R|Regexp-Builder" :command regexp-builder :help "Regexp Builder")
 				( "U|Usability U|View A|Set-Alpha" :command thinktank-set-alpha :help "透過度を設定する")
 				( "U|Usability U|View T|Toggle-Toolbar" :command thinktank-toggle-toolbar :help "toolbar表示をトグル" )
+				( "U|Usability U|View L|Toggle-Linum" :command thinktank-toggle-linum :help "行番号表示をトグル" )
 				( "U|Usability U|View M|Toggle-Menubar" :command thinktank-toggle-menubar :help "menubar表示をトグル" )
 				( "U|Usability U|View S|Toggle-Scrollbar" :command thinktank-toggle-scrollbar :help "scrollbarをトグル" )
 				( "U|Usability U|View F|Toggle-Fullscreen" :command thinktank-toggle-full :help "fullscreenをトグル" )
@@ -64,7 +65,7 @@
 				( "I|Insert D|Date" :command thinktank3-org-insert-current-time :help "timestampを挿入")
 				( "I|Insert F|Firefox" :command thinktank3-mozrepl-insert-current-page-link :help "firefoxのcurrent pageへのlinkを挿入" )
 
-				( "S|System W|Restart-webrick" :command thinktank3-system-run-webrick3 :help "local webrick serverを起動する" )
+				( "S|System W|Restart-webrick" :command thinktank3-webrick :help "local webrick serverを起動する" )
 				( "S|System D|Directory" :command thinktank3-util-open-directory :help "ディレクトリを開く" )
 				( "S|System L|Reload-memo" :command thinktank3-resource-reload :help "メモをリロードする" )
 				( "S|System S|Restruct-memo" :command thinktank3-resource-restruct :help "メモをリロードする" )

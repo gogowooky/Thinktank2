@@ -146,6 +146,11 @@
 	(thinktank-toggle-menubar)
 	(thinktank-toggle-full))
 
+(defun thinktank-toggle-linum () (interactive)
+	(set-face-attribute 'linum nil :foreground "#bf616a" :height 0.9)
+	(setq linum-format "%4d")
+	(linum-mode (if linum-mode 0 1)))
+
 (defun thinktank-toggle-full () (interactive)
 	(case (window-system)
 		('w32 (setq tt3-emacs-toggle-full (null tt3-emacs-toggle-full))

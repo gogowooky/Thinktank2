@@ -5,7 +5,6 @@
 (require 'helm)
 (require 'cl)
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; [1/3] リソースアクセスのためのインターフェイス関数
@@ -258,13 +257,14 @@
 			;; ユーザー入力取得 ( input と senddata ) 
 			(setq input (cond ((stringp input)
 												 (cond ((equal ":" (substring input 0 1))
-																(tt3-menu-get-input (intern input) message))
+																(tt3-tt3-menu-get-input (intern input) message))
 															 (t input)))
 												(t nil)))
 			(setq lookup (if (stringp lookup) lookup (json-encode lookup)))
 			(setq lookup (replace-regexp-in-string "%input" input lookup))
 			(setq lookup (replace-regexp-in-string "%upper" upper lookup))
 			(setq lookup (replace-regexp-in-string "%lower" lower lookup))
+
 			(when (stringp senddata)
 				(setq senddata (cond ((file-exists-p senddata) 
 															(with-temp-buffer (insert-file-contents senddata) (buffer-substring-no-properties (point-min) (point-max))))

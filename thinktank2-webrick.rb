@@ -7,8 +7,6 @@ require 'pp'
 require 'webrick'
 require 'benchmark'
 require 'socket'
-
-# require 'strscan'
 require 'json'
 require 'uri'
 require 'erb'
@@ -213,7 +211,10 @@ module ThinktankMemoRequest
     req.act     = url_match[4] || ""
     req.fmt     = url_match[6] || ""
     req.urlopts = req.query_string
-    req.urlhash = Hash[ *req.urlopts.split('&').map{|kv| URI.unescape(kv).split('=') }.flatten ] rescue {}
+    
+    puts "URLOPT:#{URI.unescape(req.urlopts)}"
+
+    req.urlhash = Hash[ *req.urlopts.split('&').map{|kv| URI.unescape(kv).split('=',2) }.flatten ] rescue {}
     req.lookup   = JSON.parse( req.urlhash['lookup'] ) || {} rescue {}
     req.optional = JSON.parse( req.urlhash['optional'] ) || {} rescue {}
     req.debug    = req.urlhash['debug'] || ""
@@ -228,7 +229,6 @@ module ThinktankMemoRequest
                    when ["DELETE", ""]   then "destroy"
                    else "error"
                    end
-
     req.erbpath  = [".#{req.ua}",""].map{|x| "#{req.srcdir}memos/#{req.action}.#{req.fmt}#{x}.erb" }.find{|x| File.exists?(x) }
 
     case req.debug

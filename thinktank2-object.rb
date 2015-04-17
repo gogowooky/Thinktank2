@@ -221,7 +221,7 @@ class ThinktankRoot < ThinktankTime
 
   def self.hostname () Socket.gethostname.upcase end
   def self.memodir () # memodir@MACHINE.conf から memodirを得る。
-    conffile = "#{File.dirname(__FILE__)}/memodir@#{ThinktankRoot.hostname}.conf"
+    conffile = "#{File.dirname(__FILE__)}/configuration/memodir@#{ThinktankRoot.hostname}.conf"
     begin
       File.open( conffile ){|f| f.gets.strip }
     rescue
@@ -415,7 +415,7 @@ class ThinktankRoot < ThinktankTime
     
     # query実行
     lookup["query"].each{|q|
-      print "#{q} -> "
+      print "(#{q}) -> "
       
       if /^\s*:(\w+)\s*(<<|>>|>>>)\s*(.*?)\s*$/.match( q ) then # -------- 変数操作
         var, operator, operand = $1, $2, $3
@@ -447,7 +447,8 @@ class ThinktankRoot < ThinktankTime
                            when '<~' 
                              param = senddata if param == "{senddata}"
                              vars['current'].select{|obj| p = eval( "obj.#{prop}" ) rescue nil; p && param.index(p) }.compact                         # propがparamに含まれる
-                           when '=~' then vars["current"].select{|obj| p = eval( "obj.#{prop}" ) rescue nil; p && Regexp.new( param ) =~ p }.compact  # 正規表現
+                           when '=~' then vars["current"].select{|obj| p = eval( "obj.#{prop}" ) rescue nil
+                                                                       p && ( Regexp.new( param, Regexp::IGNORECASE ) =~ p rescue nil ) }.compact     # 正規表現
                            when '<=' then vars["current"].select{|obj| p = eval( "obj.#{prop}" ) rescue nil; p && ( p <=> param ) <= 0 }.compact      # 大小比較
                            when '>=' then vars["current"].select{|obj| p = eval( "obj.#{prop}" ) rescue nil; p && ( p <=> param ) >= 0 }.compact      # 
                            when '<'  then vars["current"].select{|obj| p = eval( "obj.#{prop}" ) rescue nil; p && ( p <=> param ) < 0 }.compact       #
