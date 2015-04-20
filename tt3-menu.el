@@ -351,23 +351,27 @@
 (defun tt3-tt3-menu-context-buffer () (car (assoc-default "buf" tt3-menu-context)))
 (defun tt3-tt3-menu-context-calendar () (car (assoc-default "cal" tt3-menu-context)))
 
-(defmacro with-tt3-menu-context ( C-u-arg &rest body) "
+(defmacro with-tt3-menu-context ( C-u-arg &rest body ) "
 	(defun xxxx ( &optional arg ) (interactive \"P\") (with-tt3-menu-context arg (処理)) )
    で xxxx 呼び出し時の C-u 状態が記録される。 (処理)内で上記context関数が使える。
 "
-	(let ((arg (condition-case nil (car C-u-arg) (error 0))))
-		`(progn (setq tt3-menu-arg ,arg)
-						(setq tt3-menu-context `(("pre" ,(number-to-string (or tt3-menu-arg 0)))
+	`(let ((arg1 (condition-case nil (car ,C-u-arg) (error 0))))
+		 ;(msgbox "copn:%s" ,C-u-arg)
+		 (progn (setq tt3-menu-arg arg1)
+						(setq tt3-menu-context `(("pre" ,(number-to-string (or arg1 0)))
 																		 ("ext" ,(file-name-extension (buffer-name)))
 																		 ("maj" ,(symbol-to-string major-mode))
 																		 ("cal" ,(condition-case nil (cfw:calendar-to-emacs (cfw:cursor-to-nearest-date)) (error nil)))
 																		 ("sel" ,(current-select-string))
 																		 ("buf" ,(buffer-name))))
-
+						
+						;(msgbox "cco:%s / %s" tt3-menu-arg tt3-menu-context)
+						;; (msgbox "cco%s" (tt3-tt3-menu-context-prefix))
 						,@body
-
+						
 						(setq tt3-menu-arg nil)
-						(setq tt3-menu-context nil))))
+						(setq tt3-menu-context nil))
+		))
 
 
 (defun tt3-tt3-menu-context-match ( flag ) ;; menu 表示の確認のため、flagが保存contextに合致するかどうかチェックする
@@ -378,7 +382,7 @@
 	;;
 	;;		pre: C-u状態           ( 0, 4, 16, 64 ,,, )
 	;;	　tte: element名         ( ex: paragraph, time )
-	;;	　ext: ファイル拡張子    (msgbox "%S" (file-name-extension (buffer-name)))
+	;;	　ext: ファイル拡張子    (msgbo x"%S" (file-name-extension (buffer-name)))
 	;;	　maj: emacs major mode  (msgbox "%S" major-mode)
 	;;    min: emacs minor mode  (msgbox "%S" minor-mode-list)
 	;;	　sel: 選択状態 ( t ) 

@@ -195,6 +195,10 @@
 																																								(:limit . "30") (:offset . "0")
 																																								(:sort . "address") (:order . "dsc")
 																																								))))
+	(thinktank3-system-index-memo :lookup '((:query . [ "[ThinktankProperty]" "key == thinktank-memo" ] )
+																					(:list . "(memo.id).howm | (key,%-20s) | (value,%-20s)")
+																					(:sort . "value") (:order . "dsc")))
+
 	(thinktank3-system-index-memo :lookup '((:query . [ "[ThinktankChapter]" ] )
 																					(:list . "(memo.id).howm | (memo.title,%-30s) | memo:(title,%-30s)")
 																					(:limit . "30") (:offset . "0") (:sort . "address") (:order . "dsc")))

@@ -322,6 +322,7 @@ class ThinktankRoot < ThinktankTime
     } rescue nil
     super( memo )
   end
+  # private :>>
   
   def create_memo! ( id, content )
     self << ( memo = ThinktankMemo.create_memo( self, id, content ) )
@@ -366,7 +367,7 @@ class ThinktankRoot < ThinktankTime
       else
         File.rename( filepath, snappath ) 
       end
-      memo = self.create_memo!( id, content )
+        memo = self.create_memo!( id, content )
       self << memo
       print "THINKTANK-ROOT>> #{memo.filename} was updated."
     else
@@ -723,7 +724,7 @@ class ThinktankChapter < ThinktankTime
 
   # for following_lines analysis
   @@property_text = Regexp.new '\:PROPERTIES\:[　\s]*.*?[　\s]*\:END\:', Regexp::MULTILINE
-  @@property_item = Regexp.new '^[　\s]*\:(\w+?)\:(.*)$'
+  @@property_item = Regexp.new '^[　\s]*\:([\w\-]+?)\:(.*)$'
   @@markup_text   = Regexp.new '#\+BEGIN(?:_(\w+))?(.*?)#\+END(_\1)?', Regexp::MULTILINE
   @@markup_item   = Regexp.new '^[　\s]*#\+(\w+)\:(.*)$'
   @@schedule_tag  = Regexp.new 'SCHEDULED:[　\s]+<(\d{4}\-\d{2}\-\d{2}[^\[\]]*?)>(--<(\d{4}\-\d{2}\-\d{2}[^\[\]]*?)>)?'
@@ -759,8 +760,14 @@ class ThinktankChapter < ThinktankTime
     # following_lines analysis
     return unless following_lines
     following_lines.scan( @@link_tag ).each{ root << ThinktankOrgLinkTag.new( self, $&, @title.length + 1 + $`.length ) }
-    following_lines.scan( @@property_text ).each{|text| 
-      text.scan( @@property_item ){ root << ThinktankProperty.new( self, $1, $2.strip, $`.length + @title.length ) unless ["END", "PROPERTIES" ].include?( $1 ) }
+    following_lines.scan( @@property_text ){|propblock| 
+      propblock.split("\n").each{|line|
+        if @@property_item =~ line then 
+          unless ["END", "PROPERTIES" ].include?( $1 ) then
+            root << ThinktankProperty.new( self, $1, $2.strip, $`.length + @title.length ) 
+          end
+        end
+      }
     }
     following_lines.scan( @@markup_item ){ root << ThinktankMarkup.new( self, $1.strip, $2.strip, $`.length + @title.length ) }
     following_lines.scan( @@markup_text ){ root << ThinktankSource.new( self, $1.strip, $2.lines[0], $2.lines[1..-1].join, $`.length + @title.length ) }
