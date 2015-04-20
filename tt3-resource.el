@@ -145,7 +145,7 @@
 			(redraw-display))
 
 
-																				; (msgbox "%S" (macroexpand '(tt3-resource-show-memo-color-keyword)))
+
 		(ignore-errors
 			(macrolet ;; マクロである必要がある
 					((tt3-resource-show-memo-fcolor-keyword () (let* ((fcolors (mapcar (lambda (x) (split-string x "[ :]"))
@@ -181,7 +181,7 @@
 
 					(setq content (encode-coding-string content 'utf-8-unix))				 
 					(setq res (tt3-*-save-memo :memoid memoid :content content :verup verup :name name))
-					
+
 					(case mode
 						(:create (let ((filename (thinktank3-format :memofile (assoc-default "Filename" res))))
 											 (when show 

@@ -154,6 +154,7 @@ class ThinktankChapterArray < Array
 end
 
 class ThinktankMemoArray < Array
+  
   def [] ( id, wid = nil )
     case 
     when id.class == String
@@ -168,6 +169,7 @@ class ThinktankMemoArray < Array
 end
 
 
+# ..............................................................................................................
 module ThinktankParent
   attr_reader :children
 
@@ -296,6 +298,9 @@ class ThinktankRoot < ThinktankTime
   def dump()
     self.time = self.ThinktankFile.max.time + 60
     File.open( ThinktankRoot.dumpfilepath, 'w+b' ){|f| f.write( Marshal.dump( self ) ) }
+
+    puts "THINKTANK-ROOT>> DUMP #{ThinktankRoot.dumpfilepath}"
+
   end
 
   def memodir () ThinktankRoot.memodir end
@@ -317,7 +322,6 @@ class ThinktankRoot < ThinktankTime
     } rescue nil
     super( memo )
   end
-  private :>>
   
   def create_memo! ( id, content )
     self << ( memo = ThinktankMemo.create_memo( self, id, content ) )
@@ -329,6 +333,7 @@ class ThinktankRoot < ThinktankTime
     memodir = memo.dirname[0..-2]
     deldir  = memo.dirname[0..-2] + Time.now.strftime( "_deleted_%Y-%m-%d" )
     File.rename( memodir, deldir )
+    memo.clear
     self >> memo
   end
   
@@ -336,7 +341,7 @@ class ThinktankRoot < ThinktankTime
   
   def update_memo! ( id, content )
     memo = self.ThinktankMemo[ id ]
-    return self.create_memo!( id, content ) unless memo # id無い場合createに飛ばしている。 
+    return self.create_memo!( nil, content ) unless memo # id無い場合createに飛ばしている。 
     
     name     = "#{memo.dirname}#{memo.id}_#{Time.now.strftime('%Y-%m-%d')}"
     snappath = name + ".snap"
@@ -354,13 +359,21 @@ class ThinktankRoot < ThinktankTime
         added_lines.each{|l|   f.puts "[+] #{l}" }
         deleted_lines.each{|l| f.puts "[-] #{l}" }
       }
+      path = memo.filepath
       self >> memo
-      File.rename( filepath, snappath ) unless File.exist?( snappath )
-      self.create_memo!( memo.id, content )
+      if File.exist?( snappath )
+        File.delete( filepath ) 
+      else
+        File.rename( filepath, snappath ) 
+      end
+      memo = self.create_memo!( id, content )
+      self << memo
+      print "THINKTANK-ROOT>> #{memo.filename} was updated."
     else
       File.delete( snappath ) if File.exist?( snappath )
       File.delete( diffpath ) if File.exist?( diffpath )
     end
+
     memo
   end
   
@@ -575,7 +588,6 @@ class ThinktankRoot < ThinktankTime
      
 =end
 
-
   def self.create_root ()
     begin
       thinktank = Marshal.load( File.open( ThinktankRoot.dumpfilepath, 'r+b' ){|f| f.read } ) 
@@ -598,6 +610,7 @@ class ThinktankRoot < ThinktankTime
       thinktank
     end
   end
+
 
 
 end
@@ -642,14 +655,19 @@ class ThinktankMemo < ThinktankTime
     if File.exist?( filepath ) then
       puts "#{filepath} is not created, because it exists already."
       return nil
+
+      #puts "#{filepath} is created, but it exists already."
+      #return ThinktankMemo.new( parent, filepath )
     else
+      puts "THINKTANK-MEMO: #{filepath} is created."
       FileUtils.makedirs( File.dirname( filepath ) )
       File.open( filepath, 'wb:utf-8' ){|f| f.write( content ); f.flush }
     end
+
     ThinktankMemo.new( parent, filepath )
   end
 
-  def initialize( parent, filepath )
+  def initialize( parent, filepath ) # ファイルからobjectを作成するが、ファイルは作成しない。
 
     super( parent, File.basename( filepath ) )
 
@@ -676,7 +694,7 @@ class ThinktankMemo < ThinktankTime
 
     root << ThinktankChapter.new( self, pos, self.size - pos, chapter_number.join('.') ) rescue puts( "ERROR in Memo.new :: pos:#{pos}, size:#{self.size}" )
 
-    @title = self.ThinktankChapter[0].title rescue puts( "#{filepath}" )
+    @title = ( self.ThinktankChapter[0].title rescue puts( "#{filepath}" ) )
     @header = self.ThinktankChapter[0].header
     @updated = ThinktankTime.new( nil, File.mtime( self.filepath ) )
     self

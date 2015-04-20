@@ -2,16 +2,56 @@
 ################################################################################################################
 # Thinktankメモ管理
 ################################################################################################################
-require 'test/unit'
+require 'minitest/autorun'
+#require 'test/unit/testcase'
+require 'minitest/test'
+
+if ARGV[0] == "version2.2" then
+  load 'thinktank2-object.rb'
+  load 'thinktank2-webrick.rb'
+
+  class TC_Foo < MiniTest::Unit::TestCase
+
+    def setup
+      @thinktank = ThinktankRoot.new
+    end
+
+    def test_add_memo
+      memo = ThinktankMemo.new( @thinktank, "#{ThinktankRoot.memodir}0000-00-00-000000/0000-00-00-000000.howm" )
+
+      @thinktank << memo
+      assert_equal( @thinktank.ThinktankMemo.size, 1 )
+      assert_equal( @thinktank.ThinktankMemo[0].id, "0000-00-00-000000" )
+
+      @thinktank >> memo
+      assert_nil( @thinktank.ThinktankMemo[0] )
+      assert_equal( @thinktank.ThinktankMemo.size, 0 )
+    end
+
+    def test_create_memo
+      memo = ThinktankMemo.create_memo( @thinktank, nil, "* test\n** test2" )
+
+      @thinktank << memo
+      assert_equal( @thinktank.ThinktankMemo.size, 1 )
+      assert_match( @thinktank.ThinktankMemo[0].content, "test" )
+
+      @thinktank >> memo
+      assert_nil( @thinktank.ThinktankMemo[0] )
+      assert_equal( @thinktank.ThinktankMemo.size, 0 )
+    end
+  end
 
 
-if ARGV[0] == "version2.1" then
+
+
+
+elsif ARGV[0] == "version2.1" then
   ARGV[0] = nil
 
   load 'thinktank2-object.rb'
   load 'thinktank2-webrick.rb'
   
-  class TC_Foo < Test::Unit::TestCase
+  class TC_Foo < MiniTest::Test
     def tst_get_property
       puts
       puts "memodir:#{ThinktankRoot.memodir}"
