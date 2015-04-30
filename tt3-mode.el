@@ -33,9 +33,13 @@
 ;; ---------------------------------------------------------------------------------------------------------------------------------
 ;; minor-mode定義
 ;; ---------------------------------------------------------------------------------------------------------------------------------
+	'((car (thing-at-point 'word)))
+
+
 (define-minor-mode thinktank-minor-mode "ThinkTankマイナーモード" :lighter " TT" :global t :init-value t
 	(unless (equal major-mode 'org-mode) (org-mode)	(helm-mode))
 	(setq frame-title-format (format "emacs@%s -- TT3 <%%b>" (system-name)))
+
 
 	;; xxxx-xx-xx-xxxxxx.howm
 	(button-lock-set-button "[0-9][0-9][0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9][0-9][0-9][0-9][0-9]\\.howm"

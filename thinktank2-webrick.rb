@@ -251,7 +251,7 @@ module ThinktankMemoRequest
     puts "MEMOREQUEST>> optional --> #{optional}"
     puts "MEMOREQUEST>> action --> #{action}"
     puts "MEMOREQUEST>> erbpath --> #{erbpath}"
-    puts "MEMOREQUEST>> body --> #{body[0,100]}"
+    puts "MEMOREQUEST>> body --> \n#{body[0,100]}\n----------\n"
   end
 end
 

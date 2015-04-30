@@ -41,7 +41,6 @@
 	(condition-case nil
 			(progn (tt3-mozrepl-open-firefox)
 						 (tt3-mozrepl-request (format "gBrowser.selectedTab = gBrowser.loadOneTab('%s'); " (ad-get-arg 0) )))
-		;; (tt3-mozrepl-request (format "content.location.href = '%s'; " (ad-get-arg 0) ))
 		(error ad-do-it)))
 
 '((ad-disable-advice 'browse-url 'around 'tt3-mozrepl-browse-url-with-firefox))
@@ -50,6 +49,7 @@
 (defun thinktank3-mozrepl-insert-current-page-node () (interactive)
 	(insert (format-time-string "\n* [%Y-%m-%d %a] "))
 	(thinktank3-mozrepl-insert-current-page-link))
+
 
 ;;
 ;; linkを挿入、選択文字あればそれにurlをattach。　ここを参照、とかやるとき便利。
