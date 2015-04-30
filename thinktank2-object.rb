@@ -34,7 +34,7 @@ class ThinktankObject < Thinktank
     if /%(\-)?([0-9]+)?s/.match( fmt ) then
       fmt.sub( $&, $1 ? _ljust( str, $2.to_i ) : _rjust( str, $2.to_i ) )
     else
-      fmt ? "#{fmt}" % str : str
+      ( fmt ? "#{fmt}" % str : str ) rescue ""
     end
   end
 
@@ -172,6 +172,10 @@ end
 # ..............................................................................................................
 module ThinktankParent
   attr_reader :children
+
+  def list_children
+    children.map{|key,val| "#{key}:#{val.length} " }.join(" \n")
+  end
 
   def initialize ( *args )
     @children = Hash.new()
@@ -429,7 +433,7 @@ class ThinktankRoot < ThinktankTime
     
     # query実行
     lookup["query"].each{|q|
-      print "(#{q}) -> "
+      print "'#{q}' -> "
       
       if /^\s*:(\w+)\s*(<<|>>|>>>)\s*(.*?)\s*$/.match( q ) then # -------- 変数操作
         var, operator, operand = $1, $2, $3
@@ -468,6 +472,9 @@ class ThinktankRoot < ThinktankTime
                            when '<'  then vars["current"].select{|obj| p = eval( "obj.#{prop}" ) rescue nil; p && ( p <=> param ) < 0 }.compact       #
                            when '>'  then vars["current"].select{|obj| p = eval( "obj.#{prop}" ) rescue nil; p && ( p <=> param ) > 0 }.compact       #
                            end
+ 
+      elsif /^\[(\w+)\]$/.match( q ) then # -------- オブジェクトクラスの絞込み
+        vars['current'] = @children[ $1 ] rescue []
       end
     }
     

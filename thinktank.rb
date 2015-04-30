@@ -6,7 +6,18 @@ require 'minitest/autorun'
 #require 'test/unit/testcase'
 require 'minitest/test'
 
-if ARGV[0] == "version2.2" then
+if ARGV[0] == "test2" then
+  load 'thinktank2-object.rb'
+  load 'thinktank2-webrick.rb'
+
+  class TestThinktankRoot < MiniTest::Unit::TestCase
+    thinktank = ThinktankRoot.create_root
+    index = thinktank.index_object( JSON.parse( "" ) )
+    
+  end
+
+
+elsif ARGV[0] == "test1" then
   load 'thinktank2-object.rb'
   load 'thinktank2-webrick.rb'
 
@@ -16,7 +27,7 @@ if ARGV[0] == "version2.2" then
       @thinktank = ThinktankRoot.new
     end
 
-    def test_add_memo
+    def test_registd_memo
       memo = ThinktankMemo.new( @thinktank, "#{ThinktankRoot.memodir}0000-00-00-000000/0000-00-00-000000.howm" )
 
       @thinktank << memo
@@ -26,18 +37,22 @@ if ARGV[0] == "version2.2" then
       @thinktank >> memo
       assert_nil( @thinktank.ThinktankMemo[0] )
       assert_equal( @thinktank.ThinktankMemo.size, 0 )
+
     end
 
     def test_create_memo
-      memo = ThinktankMemo.create_memo( @thinktank, nil, "* test\n** test2" )
 
-      @thinktank << memo
-      assert_equal( @thinktank.ThinktankMemo.size, 1 )
-      assert_match( @thinktank.ThinktankMemo[0].content, "test" )
+      puts @thinktank.list_children
 
-      @thinktank >> memo
-      assert_nil( @thinktank.ThinktankMemo[0] )
-      assert_equal( @thinktank.ThinktankMemo.size, 0 )
+      #memo = ThinktankMemo.create_memo( @thinktank, nil, "* test\n** test2" )
+
+      #@thinktank << memo
+      #assert_equal( @thinktank.ThinktankMemo.size, 1 )
+      #assert_match( @thinktank.ThinktankMemo[0].content, "test" )
+
+      #@thinktank >> memo
+      #assert_nil( @thinktank.ThinktankMemo[0] )
+      #assert_equal( @thinktank.ThinktankMemo.size, 0 )
     end
   end
 
@@ -69,6 +84,8 @@ elsif ARGV[0] == "vlc" then
   load 'thinktank2-webrick.rb'
   execute_vlc_server
 
+=begin
+
 elsif ARGV[0] == "version2" then
 
   ARGV[0] = nil
@@ -93,7 +110,6 @@ elsif ARGV[0] == "version2" then
 
     def test_index_memo
 
-=begin
       thinktank = ThinktankRoot.new
       thinktank << ThinktankMemo.new( thinktank, "#{ThinktankRoot.memodir}0000-00-00-000000/0000-00-00-000000.howm" )
       thinktank << ThinktankMemo.new( thinktank, "#{ThinktankRoot.memodir}0000-00-00-000001/0000-00-00-000001.howm" )
@@ -118,7 +134,6 @@ elsif ARGV[0] == "version2" then
       puts "\n", thinktank.index_memo( { "query" => [ "[ThinktankMemo]" ], "sort" => "id", "order" => "dsc", "list" => "(id).howm | (title,%40s)" } )
       puts thinktank.index_memo( { "query" => [ "[ThinktankMemo]" ], "sort" => "id", "order" => "dsc", "first" => "(id)" } )
       puts thinktank.index_memo( { "query" => [ "[ThinktankMemo]" ], "sort" => "id", "order" => "asc", "first" => "(id)" } )
-=end      
 
       thinktank = ThinktankRoot.create_root()
       #puts "\n", tt.index_memo( { "query" => [ "[ThinktankMemo]", "title=~Orexin" ], "sort" => "id", "order" => "dsc", "list" => "(id).howm | (title,%40s)" } )
@@ -163,7 +178,6 @@ elsif ARGV[0] == "version2" then
 
     end
 
-=begin
     def test_dump
       thinktank = ThinktankRoot.create_root
       puts thinktank.ThinktankMemo.size
@@ -304,7 +318,6 @@ elsif ARGV[0] == "version2" then
     end
 
 
-=end
     def setup
       #@thinktank = ThinktankRoot.new
     end
@@ -404,6 +417,7 @@ else
     execute_server
 
   end
+=end      
 
 
 end

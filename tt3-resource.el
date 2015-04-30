@@ -286,16 +286,18 @@
 
 			;; server response保存ファイルの再作成
 
-			;;(msgbox "INDEX:%s" (tt3-tt3-menu-context-prefix))
-
 			(setq cachefile (concat cachefile name (if input (format "--%s--" input) "") ".lhowm" ))
+
+			;; (msgbox "INDEX:%s   %s" (tt3-tt3-menu-context-prefix) cachefile)
 			;; (popup-tip (format "cachefile:%s\nname:%s\nlookup:%s\ninput:%s\nattrib:%s\nmessage:%s\ncache:%s\nsenddata:%80s" cachefile name lookup input attrib message cache senddata)) ;; 矢印キーで表示閉じる
+
 			(when (or (null (file-exists-p cachefile))        ;; Cacheファイル無い場合
 								(< 0 (tt3-tt3-menu-context-prefix))     ;; C-u指定ある場合
 								(equal cache :no)                       ;; Cache指定noの場合
 								(and (equal cache :daily)               ;; Cache指定dailyで既存が本日作成されていない場合
 										 (string< (format-time-string "%Y-%m-%d" (nth 5 (file-attributes cachefile))) (format-time-string "%Y-%m-%d")))) ;; (nth 5 (file-attributes "tt.el")) (current-time) 
 				
+				; (delete-file cachefile)
 				(with-temp-file cachefile (insert-buffer-substring (assoc-default "Buffer" (tt3-*-index-memo :lookup lookup :body senddata))))) ;; server通信＆データcache
 
 			;; helm sourceの作成
@@ -338,10 +340,6 @@
 
 																				; restruct
 (defun thinktank3-resource-restruct () (interactive)
-	(thinktank3-resource-index :name :memo-synchronize))
-
-																				; replace
-(defun thinktank3-resource-replace () (interactive)
 	(thinktank3-resource-index :name :memo-synchronize))
 
 																				; system-propertyを設定する

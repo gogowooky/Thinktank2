@@ -69,16 +69,16 @@
 				( "S|System D|Directory" :command thinktank3-util-open-directory :help "ディレクトリを開く" )
 				( "S|System L|Reload-memo" :command thinktank3-resource-reload :help "メモをリロードする" )
 				( "S|System S|Restruct-memo" :command thinktank3-resource-restruct :help "メモをリロードする" )
-				( "S|System P|Replace-memo" :command thinktank3-resource-replace :help "メモをリロードする" )
 				( "S|System O|Object" :command thinktank3-resource-show-property-object :help "objectの数を数える" )
 				( "S|System A|AutoSelect" :command thinktank3-menu-select-one-automatically :help "helmで１つに絞り込んだら自動選択")
 				( "S|System M|Menu-Initialize" :command thinktank3-menu-initialize :help "menuを更新する" )
 
-				( "W|WebSearch R|Ruby M|Rurima" :command thinktank3-mozrepl-rurema-search :help "るりまさーち")
-				( "W|WebSearch R|Ruby R|RubyRef" :command thinktank3-mozrepl-rubyref-search :help "Rubyリファレンス" )
-				
-				( "O|OtherMenu L|UrlList" :func (tt3-menu-show-weburl :list) :help "URLリスト" )
-				( "O|OtherMenu T|UrlList" :func (tt3-menu-show-weburl :tree) :help "URLリスト" )
+				( "W|Web S|Search R|Ruby M|Rurima" :command thinktank3-mozrepl-rurema-search :help "るりまさーち")
+				( "W|Web S|Search R|Ruby R|RubyRef" :command thinktank3-mozrepl-rubyref-search :help "Rubyリファレンス" )
+				( "W|Web F|Firefox" :command thinktank3-mozrepl-remote :help "MozRepl" )
+
+				( "W|Web U|Url L|List" :func (tt3-menu-show-weburl :list) :help "URLリスト" )
+				( "W|Web U|Url T|Tree" :func (tt3-menu-show-weburl :tree) :help "URLリスト" )
 
 				( "h|Help S|Search W|word" :command thinktank3-search-forward-focused-string :help "キーワードジャンプ")
 				( "h|Help S|Search L|Elisp" :helm helm-source-info-elisp :help "elisp検索")
@@ -145,18 +145,20 @@
 																				(help (org-entry-get nil "help")))
 																	 (when menu (push `(,menu
 																											:func    (thinktank3-resource-index :name ,title)
+																											;; :func    (thinktank3-resource-index :name ,menu)
 																											:help    ,help
 																											:context ,(org-entry-get nil "context"))
 																										thinktank3-menu-string-list))))
 		;; MozRepl 関連の登録
-		(mapcar-tt3-property-subnode "Menu.Mozrepl"
-																 (let* ((menu (org-entry-get nil "menu"))
-																				(help (org-entry-get nil "help"))
-																				(code (trim-string (tt3-tt3-property-get-element :src-block))))
-																	 (when menu (push `(,menu
-																											:func    (tt3-mozrepl-request ,code)
-																											:help    ,help)
-																										thinktank3-menu-string-list))))
+		;(mapcar-tt3-property-subnode "Menu.Mozrepl"
+		;														 (let* ((menu (org-entry-get nil "menu"))
+		;																		(help (org-entry-get nil "help"))
+		;																		(code (trim-string (tt3-tt3-property-get-element :src-block))))
+		;															 (when menu (push `(,menu
+		;																									:func    (tt3-mozrepl-request ,code)
+		;																									:help    ,help)
+		;																								thinktank3-menu-string-list))))
+
 		;; 一行メモの関数定義＆登録
 		;; エラーでる。
 		'(loop for ( memoid name comm supl menu ) in (thinktank3-resource-index :name "Menu.Query.AssociateFile.oneline" :output :lisp)

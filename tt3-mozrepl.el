@@ -7,6 +7,31 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; public 関数
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun thinktank3-mozrepl-remote () (interactive)
+	(tt3-mozrepl-open-firefox)
+
+	(unwind-protect 
+			(catch 'exit-menu
+				(let (input-key prev-command)
+					(while t
+						(setq input-key (read-key (format "commnand: %s" prev-command))) ;; (read-key)
+						(setq prev-command (case input-key
+																 (7   (throw 'exit-menu 1) "quit") ;; C-g
+																 (27  (throw 'exit-menu 2) "quit") ;: ESC
+																 ((16 up)     (tt3-mozrepl-request  "goDoCommand('cmd_scrollLineUp');") "up") ;; C-p
+																 ((14 down)   (tt3-mozrepl-request  "goDoCommand('cmd_scrollLineDown');") "down") ;; C-n
+																 ((2 left)    (tt3-mozrepl-request  "gBrowser.tabContainer.advanceSelectedTab(-1, true);") "left")  ;; C-b
+																 ((6 right)   (tt3-mozrepl-request  "gBrowser.tabContainer.advanceSelectedTab(1, true);")  "right") ;; C-f
+
+																 ((8 127)     (tt3-mozrepl-request  "gBrowser.goBack();")    "back")      ;; C-h, BS
+																 (S-backspace (tt3-mozrepl-request  "gBrowser.goForward();") "forward")   ;; S-BS
+
+																 (23      (tt3-mozrepl-request      "gBrowser.removeCurrentTab();") "close tab") ;; C-w
+																 (18      (kill-buffer "*MozRepl*") "wfreset mozrepl") ;; C-r
+																 (C-left  (tt3-mozrepl-request      "gBrowser.moveTabBackward();") "tab left")   ;; C-left
+																 (C-right (tt3-mozrepl-request      "gBrowser.moveTabForward();") "tab right")   ;; C-right
+																 ))
+					))))) ; (tt3-mozrepl-request  "goDoCommand('search');")
 
 (defadvice browse-url (around tt3-mozrepl-browse-url-with-firefox activate )
 	(condition-case nil
@@ -36,7 +61,6 @@
 
 (defun thinktank3-mozrepl-get-current-page-link () 
 	(format "[[%s][%s]]" (thinktank3-mozrepl-get-url) (replace-regexp-in-string "[\]\[]" "|" (thinktank3-mozrepl-get-title))))
-
 
 
 '((thinktank3-mozrepl-insert-current-page))
@@ -143,7 +167,7 @@
 
 	(condition-case nil (tt3-mozrepl-request "window.alert( \"egashira\" ); ") (error nil))
 	
- 	 (tt3-mozrepl-request "window.alert( \"egashira\" ); ") ;; alert dialog boxも出せる。
+	(tt3-mozrepl-request "window.alert( \"egashira\" ); ") ;; alert dialog boxも出せる。
  	 (tt3-mozrepl-request "window.prompt( \"egashira\" ); ") ;; 値も取り出せているが、tt3-mozrepl-request の出来が良くない。
 	 (tt3-mozrepl-nonread)
 	 (progn

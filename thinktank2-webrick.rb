@@ -212,8 +212,6 @@ module ThinktankMemoRequest
     req.fmt     = url_match[6] || ""
     req.urlopts = req.query_string
     
-    puts "URLOPT:#{URI.unescape(req.urlopts)}"
-
     req.urlhash = Hash[ *req.urlopts.split('&').map{|kv| URI.unescape(kv).split('=',2) }.flatten ] rescue {}
     req.lookup   = JSON.parse( req.urlhash['lookup'] ) || {} rescue {}
     req.optional = JSON.parse( req.urlhash['optional'] ) || {} rescue {}
