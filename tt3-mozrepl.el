@@ -15,23 +15,27 @@
 				(let (input-key prev-command)
 					(while t
 						(setq input-key (read-key (format "commnand: %s" prev-command))) ;; (read-key)
-						(setq prev-command (case input-key
-																 (7   (throw 'exit-menu 1) "quit") ;; C-g
-																 (27  (throw 'exit-menu 2) "quit") ;: ESC
-																 ((16 up)     (tt3-mozrepl-request  "goDoCommand('cmd_scrollLineUp');") "up") ;; C-p
-																 ((14 down)   (tt3-mozrepl-request  "goDoCommand('cmd_scrollLineDown');") "down") ;; C-n
-																 ((2 left)    (tt3-mozrepl-request  "gBrowser.tabContainer.advanceSelectedTab(-1, true);") "left")  ;; C-b
-																 ((6 right)   (tt3-mozrepl-request  "gBrowser.tabContainer.advanceSelectedTab(1, true);")  "right") ;; C-f
+						(setq prev-command
+									(case input-key
+										(7   (throw 'exit-menu 1) "quit") ;; C-g
+										(27  (throw 'exit-menu 2) "quit") ;: ESC
+										((16 up)     (tt3-mozrepl-request  "goDoCommand('cmd_scrollLineUp');") "up") ;; C-p
+										((14 down)   (tt3-mozrepl-request  "goDoCommand('cmd_scrollLineDown');") "down") ;; C-n
+										((2 left)    (tt3-mozrepl-request  "gBrowser.tabContainer.advanceSelectedTab(-1, true);") "left")  ;; C-b
+										((6 right)   (tt3-mozrepl-request  "gBrowser.tabContainer.advanceSelectedTab(1, true);")  "right") ;; C-f
+										
+										((8 127)     (tt3-mozrepl-request  "gBrowser.goBack();")    "back")      ;; C-h, BS
+										(S-backspace (tt3-mozrepl-request  "gBrowser.goForward();") "forward")   ;; S-BS
+										
+										(23      (tt3-mozrepl-request      "gBrowser.removeCurrentTab();") "close tab") ;; C-w
+										(18      (kill-buffer "*MozRepl*") "wfreset mozrepl") ;; C-r
+										(C-left  (tt3-mozrepl-request      "gBrowser.moveTabBackward();") "tab left")   ;; C-left
+										(C-right (tt3-mozrepl-request      "gBrowser.moveTabForward();") "tab right")   ;; C-right
+										(t "nop")
+										))
+						))))) ; (tt3-mozrepl-request  "goDoCommand('search');")
 
-																 ((8 127)     (tt3-mozrepl-request  "gBrowser.goBack();")    "back")      ;; C-h, BS
-																 (S-backspace (tt3-mozrepl-request  "gBrowser.goForward();") "forward")   ;; S-BS
 
-																 (23      (tt3-mozrepl-request      "gBrowser.removeCurrentTab();") "close tab") ;; C-w
-																 (18      (kill-buffer "*MozRepl*") "wfreset mozrepl") ;; C-r
-																 (C-left  (tt3-mozrepl-request      "gBrowser.moveTabBackward();") "tab left")   ;; C-left
-																 (C-right (tt3-mozrepl-request      "gBrowser.moveTabForward();") "tab right")   ;; C-right
-																 ))
-					))))) ; (tt3-mozrepl-request  "goDoCommand('search');")
 
 (defadvice browse-url (around tt3-mozrepl-browse-url-with-firefox activate )
 	(condition-case nil
@@ -154,11 +158,11 @@
 	(inferior-moz-process))
 
 '((tt3-mozrepl-open-firefox))
+'((start-process-shell-command "firefox" nil (thinktank3-config :firefox)))
 
 ;; -----------------------------------------------------------------------------------------------------------------------------------
 
 '((progn	
-
 	(tt3-mozrepl-browse-url "http://miyamae.github.io/rubydoc-ja/2.0.0/#!/doc/index.html")
 	(tt3-mozrepl-request    "gBrowser.contentDocument.getElementById('search-box').value = 'File exist';" )
 	(tt3-mozrepl-browse-url "http://rurema.clear-code.com/version:2.0.0/")
