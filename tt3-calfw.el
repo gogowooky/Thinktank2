@@ -19,7 +19,8 @@
 
 '((cfw:ical-create-source "仕事ggl" tt3-calfw-ggl-job-ics "firebrick"))
 
-(defun thinktank3-calfw-show ()	(interactive) (thinktank3-calfw-open-calendar :callist (split-string (thinktank3-property "Extension.Queries.Calfw" "cal-set") "[, ]" nil)))
+(defun thinktank3-calfw-show ()	(interactive)
+	(thinktank3-calfw-open-calendar :callist (split-string (thinktank3-property "Extension.Queries.Calfw" "cal-set") "[, ]" nil)))
 
 (defun thinktank3-calfw-show-group () (interactive)
 	(let* ((cal-group    (mapcar-tt3-property-subnode "Extension.Queries.Calfw" (cons title (org-entry-get nil "cal-group"))))

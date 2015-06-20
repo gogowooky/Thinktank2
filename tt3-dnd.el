@@ -101,8 +101,8 @@
 		(save-excursion 
 			(set-buffer (get-buffer-create "tmp"))
 			(insert filepath
-	))))
-			
+							))))
+
 (defun tt3-dnd-insert-link-tag ( filepath )
 	;;
 	;; ファイルへのlinkを作成する。
@@ -134,14 +134,14 @@
 			(insert (format "[[file:%s][%s:%s]]\n" filepath system-name (file-name-nondirectory filepath)))) ;; file: 間接参照無し
 		(set-mark (point))
 		(goto-char curpos)))
-		
+
 
 (defun tt3-dnd-link-to-combine ( mode )
-;;
-;; linkファイルをmemo-dirにコピー(=combine)して、org-tagを書き換える。
-;;
-;; combined-file :: [tt:/(filename)] ([[file:/(filepath)][original on PCNAME/tttmp/ttsync/dropbox]])
-;;
+	;;
+	;; linkファイルをmemo-dirにコピー(=combine)して、org-tagを書き換える。
+	;;
+	;; combined-file :: [tt:/(filename)] ([[file:/(filepath)][original on PCNAME/tttmp/ttsync/dropbox]])
+	;;
 	(narrow-to-region (line-beginning-position) (line-end-position))
 	(beginning-of-line)
 
