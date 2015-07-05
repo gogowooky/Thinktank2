@@ -351,6 +351,7 @@ class ThinktankRoot < ThinktankTime
     name     = "#{memo.dirname}#{memo.id}_#{Time.now.strftime('%Y-%m-%d')}"
     snappath = name + ".snap"
     diffpath = name + ".diff"
+
     filepath = memo.filepath
     
     newlines = content.lines
