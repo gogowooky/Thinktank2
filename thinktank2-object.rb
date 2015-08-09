@@ -712,7 +712,7 @@ class ThinktankMemo < ThinktankTime
   def filename () "#{@id}.howm" end
   def dirname () root.memodir + ( @year == "0000" ? "#{@id}/" : "#{@year}/#{@month}/#{@id}/" ) end
   def size () @content.size end
-  # def updated () ThinktankTime.new( nil, File.mtime( self.filepath ) ) end
+  def updated () ThinktankTime.new( nil, File.mtime( self.filepath ) ) end
 end
 
 # ..............................................................................................................

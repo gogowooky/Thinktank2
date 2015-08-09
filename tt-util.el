@@ -157,7 +157,9 @@
 					(if tt3-emacs-toggle-full
 							(w32-send-sys-command #xf030)
 						(w32-send-sys-command 61728)))
-		('ns (ns-toggle-fullscreen))
+		('ns (set-frame-parameter
+					nil 'fullscreen
+					(when (not (frame-parameter nil 'fullscreen)) 'maximized)))   ; fullboth)))
 		('x  (set-frame-parameter nil 'fullscreen (if (frame-parameter (selected-frame) 'fullscreen) nil 'fullboth)))))
 
 (defun thinktank-indent-all () (interactive)
