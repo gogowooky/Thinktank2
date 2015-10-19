@@ -2,9 +2,10 @@
 ################################################################################################################
 # Thinktankメモ管理
 ################################################################################################################
+require 'minitest/unit'
 require 'minitest/autorun'
 #require 'test/unit/testcase'
-require 'minitest/test'
+#require 'minitest/test'
 
 if ARGV[0] == "test2" then
   load 'thinktank2-object.rb'
@@ -66,8 +67,9 @@ elsif ARGV[0] == "version2.1" then
   load 'thinktank2-object.rb'
   load 'thinktank2-webrick.rb'
   
-  class TC_Foo < MiniTest::Test
-    def tst_get_property
+  class TC_Foo < MiniTest::Unit::TestCase
+
+    def test_get_property
       puts
       puts "memodir:#{ThinktankRoot.memodir}"
       puts "tempdir:#{ThinktankRoot.tempdir}"

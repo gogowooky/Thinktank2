@@ -28,7 +28,7 @@ def execute_server ()
   http, host, port, root = url.split( /[\/:]+/ )                       # [ http, 127.0.0.1, 20080, thinktank ]
   root = "/#{root}/"
 
-  server = ThinktankServer.new( { :BindAddress => host, :Port => port, :DocumentRoot => root, :Tempdir => tempdir } )
+  server = ThinktankServer.new( { :BindAddress => host, :Port => port, :DocumentRoot => root, :Tempdir => tempdir, :BindAddress => "0.0.0.0" } )
 
   ### ----------------------------------------------------------------------------------------------------------
   ### thinktankobject初期化 
@@ -182,7 +182,8 @@ module ThinktankStyleRequest
   def self.extended (req)
     super(req)
     req.styledir  = "#{req.srcdir}style/"
-    req.stylepath = req.styledir + File.basename( req.path )
+    # req.stylepath = req.styledir + File.basename( req.path )
+    req.stylepath = req.styledir + req.path[ req.path.match( "style/" ).end(0)..-1 ]
 
     puts "STYLEREQUEST>> style was requested --> #{req.path}"
   end

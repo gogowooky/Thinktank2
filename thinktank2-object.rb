@@ -300,7 +300,7 @@ class ThinktankRoot < ThinktankTime
 
   def initialize () super( nil, Time.now ) end
   def dump()
-    self.time = self.ThinktankFile.max.time + 60
+    self.time = self.ThinktankFile.max.time + 60 rescue 0
     File.open( ThinktankRoot.dumpfilepath, 'w+b' ){|f| f.write( Marshal.dump( self ) ) }
 
     puts "THINKTANK-ROOT>> DUMP #{ThinktankRoot.dumpfilepath}"
@@ -778,7 +778,7 @@ class ThinktankChapter < ThinktankTime
       }
     }
     following_lines.scan( @@markup_item ){ root << ThinktankMarkup.new( self, $1.strip, $2.strip, $`.length + @title.length ) }
-    following_lines.scan( @@markup_text ){ root << ThinktankSource.new( self, $1.strip, $2.lines[0], $2.lines[1..-1].join, $`.length + @title.length ) }
+    following_lines.scan( @@markup_text ){ root << ThinktankSource.new( self, $1.strip, $2.lines[0], $2.lines[1..-1].join, $`.length + @title.length ) rescue nil }
     following_lines.scan( @@schedule_tag ){ root << ThinktankScheduleTag.new( self, $1, $3, $`.length + @title.length ) }
     following_lines.scan( @@deadline_tag ){ root << ThinktankDeadlineTag.new( self, $1, $3, $`.length + @title.length ) }
     following_lines.scan( @@closed_tag ){ root << ThinktankClosedTime.new( self, $1, nil, $`.length + @title.length ) }
