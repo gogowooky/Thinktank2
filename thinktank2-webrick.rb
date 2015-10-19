@@ -66,7 +66,7 @@ def execute_server ()
   # 
   server.mount_proc( "#{root}style" ){|req,res|
     req.extend ThinktankStyleRequest
-    res.body = IO.read( req.stylepath )
+    res.body = IO.read( req.stylepath[ req.stylepath.match("style").end .. -1] )
     res['Content-Type'] = "text/css;charset=utf-8"
   }
 
