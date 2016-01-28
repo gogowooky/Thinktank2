@@ -352,8 +352,7 @@
 												(format "do script \"ruby thinktank.rb %s\" in window 1\n" option)
 												"end tell\n"))
 							(cd default-directory)
-							(start-process-shell-command "thinktank-server" nil "osascript" "thinktank.applescript"))
-
+							(shell-command (format "/usr/bin/osascript %sthinktank.applescript" default-directory)))
 				
 				('x (start-process-shell-command "xfce" nil (format "xfce4-terminal --working-directory='%s' -H --command='ruby thinktank.rb %s'" default-directory option)))))))
 

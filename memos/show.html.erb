@@ -49,22 +49,21 @@
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js"></script>
-	<!-- <script src="/style/ace/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script> -->
+	<!-- <script src="http:/127.0.0.1:20090/thinktank/style/ace/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script> -->
 	<!-- Now subdirectoyr in style dir is being hidden, -->
   <!-- http://qiita.com/naga3/items/1bc268243f2e8a6514e5 -->
 
   <script>
-		$.ajax({
-      type: 'GET',
-      url: 'http://192.168.11.100:20090/thinktank/memos/0000-00-00-000000.howm',
-      dataType: 'text',
-      success: function(data) { $('#editor2').text(data); }
-    });
-
     var editor2 = ace.edit("editor2");
     editor2.$blockScrolling = Infinity;
     editor2.setTheme("ace/theme/monokai");
     editor2.getSession().setMode("ace/mode/html");
+		editor2.insert( '1', 'egashira' );
+  <!-- $.ajax({ type: 'GET',
+                               url: 'http://192.168.11.100:20090/thinktank/memos/0000-00-00-000000.howm',
+                               dataType: 'text'
+                              }).responseText ); -->
+
 
 
     var editor = ace.edit("editor");

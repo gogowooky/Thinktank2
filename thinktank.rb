@@ -2,8 +2,8 @@
 ################################################################################################################
 # Thinktankメモ管理
 ################################################################################################################
-require 'minitest/unit'
 require 'minitest/autorun'
+require 'minitest/unit'
 #require 'test/unit/testcase'
 #require 'minitest/test'
 
@@ -67,24 +67,15 @@ elsif ARGV[0] == "version2.1" then
   load 'thinktank2-object.rb'
   load 'thinktank2-webrick.rb'
   
-  class TC_Foo < MiniTest::Unit::TestCase
-
-    def test_get_property
-      puts
-      puts "memodir:#{ThinktankRoot.memodir}"
-      puts "tempdir:#{ThinktankRoot.tempdir}"
-      puts "syncdir:#{ThinktankRoot.syncdir}"
-      puts "property:" + ThinktankRoot.property( "Thinktank.Host.thinktank:url" )  #   "http://127.0.0.1:20080/thinktank/
-    end
-  end
+  puts
+  puts "memodir:#{ThinktankRoot.memodir}"
+  puts "tempdir:#{ThinktankRoot.tempdir}"
+  puts "syncdir:#{ThinktankRoot.syncdir}"
+  puts "property:" + ThinktankRoot.property( "Thinktank.Host.thinktank:url" )  #   "http://127.0.0.1:20080/thinktank/
 
   execute_server
 
-
   
-elsif ARGV[0] == "vlc" then
-  load 'thinktank2-webrick.rb'
-  execute_vlc_server
 
 =begin
 
