@@ -40,66 +40,20 @@
 
 (defun thinktank3-menu-initialize () (interactive) "   (thinktank3-menu-initialize)
 * [説明] 各所で設定されているメニュー設定値を収集し、thinktank menuを再構成する
-  [注意] thinktank起動の最後(tt.elの最後)に一度実行している。 "
+  [注意] 
+	 (setq thinktank3-menu-string-list [メニュー] )                 ; メニューを設定する
+	 (add-hook 'thinktank3-menu-before-initialize-hook [初期化] )   ; 追加の初期化指定(optional)
+	 (thinktank3-menu-initialize)                                   ; 初期化
+
+	 (define-key map (kbd ”C-/”) 'thinktank3-menu-show-tree-menu)   ; 呼び出し
+	 (define-key map (kbd ”C-?”) 'thinktank3-menu-show-list-menu)   ; 呼び出し"
 
 	(run-hooks 'thinktank3-menu-before-initialize-hook)
+	(or thinktank3-menu-string-list (setq thinktank3-menu-string-list thinktank3-menu-default-string-list))  ;; デフォルトメニューの登録
+	(run-hooks 'thinktank3-menu-after-initialize-hook))
 
-	(let* ()
-		(thinktank3-property :reset)
 
-		;; デフォルトメニューの登録
-		(or thinktank3-menu-string-list (setq thinktank3-menu-string-list thinktank3-menu-default-string-list))
 
-		;; web search engine の登録
-		(mapcar-tt3-property-subnode "Menu.WebSearch"
-																 (let ((menu (org-entry-get nil "menu"))(url (org-entry-get nil "url")) (help (org-entry-get nil "help")))
-																	 (when menu
-																		 (when (string-match "\\[\\[\\([^\]]+\\)\\]\\[\\([^\]]+\\)?\\]\\]" url)
-																			 (setq help (concat (when help (concat help ": ")) (match-string 2 url)))
-																			 (setq url  (match-string 1 url)))
-																		 (push `(,menu
-																						 :url     ,url
-																						 :help    ,help
-																						 :input   ,(intern (org-entry-get nil "input"))
-																						 :context ,(org-entry-get nil "context")
-																						 :message ,(org-entry-get nil "message"))
-																					 thinktank3-menu-string-list))))
-		
-		;; WebSearchEnginesをorg-link-abbrev-alistに登録　文中 [[google:orexin leptin]] で検索できるようになる。
-		(setq org-link-abbrev-alist nil)
-		(mapcar-tt3-property-subnode "Menu.WebSearch" 
-																 (when (org-entry-get nil "orgtag")
-																	 (push (cons (org-entry-get nil "orgtag") (replace-regexp-in-string "%input" "%s" (org-entry-get nil "url"))) org-link-abbrev-alist)))
-
-		;; Query 関連の登録
-		(mapcar-tt3-property-subnode "Menu.Query"
-																 (let* ((menu (org-entry-get nil "menu"))
-																				(help (org-entry-get nil "help")))
-																	 (when menu (push `(,menu
-																											:func    (thinktank3-resource-index :name ,title)
-																											;; :func    (thinktank3-resource-index :name ,menu)
-																											:help    ,help
-																											:context ,(org-entry-get nil "context"))
-																										thinktank3-menu-string-list))))
-		;; MozRepl 関連の登録
-		;(mapcar-tt3-property-subnode "Menu.Mozrepl"
-		;														 (let* ((menu (org-entry-get nil "menu"))
-		;																		(help (org-entry-get nil "help"))
-		;																		(code (trim-string (tt3-tt3-property-get-element :src-block))))
-		;															 (when menu (push `(,menu
-		;																									:func    (tt3-mozrepl-request ,code)
-		;																									:help    ,help)
-		;																								thinktank3-menu-string-list))))
-
-		;; 一行メモの関数定義＆登録
-		;; エラーでる。
-		'(loop for ( memoid name comm supl menu ) in (thinktank3-resource-index :name "Menu.Query.AssociateFile.oneline" :output :lisp)
-					 unless (equal menu "")
-					do (push `(,menu :func (tt3-resource-append-oneline :memoid ,memoid :name ,name) :help ,(concat "一行メモ:" name)) thinktank3-menu-string-list))
-		
-		)
-	(run-hooks 'thinktank3-menu-after-initialize-hook)
-	)
 
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------

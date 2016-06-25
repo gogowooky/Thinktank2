@@ -21,7 +21,13 @@
 
 
 ;;
-;; setup menu
+;; property setup
+;;
+(thinktank3-property :reset)
+
+
+;;
+;; menu setup
 ;;
 (setq thinktank3-menu-string-list 
 			'(( "M|Memo C|Clipboard I|Id" :context "ext:howm" :func (push-string-to-clipboard (thinktank3-format :memofile (buffer-name))) :help "メモのIDをコピーする")
@@ -75,8 +81,8 @@
 				( "S|System A|AutoSelect" :command thinktank3-menu-select-one-automatically :help "helmで１つに絞り込んだら自動選択")
 				( "S|System M|Menu-Initialize" :command thinktank3-menu-initialize :help "menuを更新する" )
 
-				( "W|WebSearch R|Ruby M|Rurima" :command thinktank3-mozrepl-rurema-search :help "るりまさーち")
-				( "W|WebSearch R|Ruby R|RubyRef" :command thinktank3-mozrepl-rubyref-search :help "Rubyリファレンス" )
+				( "W|Web R|Ruby M|Rurima" :command thinktank3-mozrepl-rurema-search :help "るりまさーち")
+				( "W|Web R|Ruby R|RubyRef" :command thinktank3-mozrepl-rubyref-search :help "Rubyリファレンス" )
 				
 				( "O|OtherMenu L|UrlList" :func (tt3-menu-show-weburl :list) :help "URLリスト" )
 				( "O|OtherMenu T|UrlList" :func (tt3-menu-show-weburl :tree) :help "URLリスト" )
@@ -102,7 +108,67 @@
 				( "h|Help C|Context" :func (msgbox "context:%S" tt3-menu-context) :help "contextを表示")
 				))
 
+(defun thinktank3-add-search-engine-to-menu ()	;; web search engine の登録
+	(mapcar-tt3-property-subnode "Menu.WebSearch"
+															 (let ((menu (org-entry-get nil "menu"))(url (org-entry-get nil "url")) (help (org-entry-get nil "help")))
+																 (when menu
+																	 (when (string-match "\\[\\[\\([^\]]+\\)\\]\\[\\([^\]]+\\)?\\]\\]" url)
+																		 (setq help (concat (when help (concat help ": ")) (match-string 2 url)))
+																		 (setq url  (match-string 1 url)))
+																	 (push `(,menu
+																					 :url     ,url
+																					 :help    ,help
+																					 :input   ,(intern (org-entry-get nil "input"))
+																					 :context ,(org-entry-get nil "context")
+																					 :message ,(org-entry-get nil "message"))
+																				 thinktank3-menu-string-list)))))
+(add-hook 'thinktank3-menu-after-initialize-hook 'thinktank3-add-search-engine-to-menu)
+
+(defun thinktank3-add-query-to-menu ()	;; Query 関連の登録
+	(mapcar-tt3-property-subnode "Menu.Query"
+															 (let* ((menu (org-entry-get nil "menu"))
+																			(help (org-entry-get nil "help")))
+																 (when menu (push `(,menu
+																										:func    (thinktank3-resource-index :name ,title)
+																										;; :func    (thinktank3-resource-index :name ,menu)
+																										:help    ,help
+																										:context ,(org-entry-get nil "context"))
+																									thinktank3-menu-string-list)))))
+(add-hook 'thinktank3-menu-after-initialize-hook 'thinktank3-add-query-to-menu)
+
+(defun thinktank3-add-mozrepl-to-menu ()	;; MozRepl 関連の登録
+		;(mapcar-tt3-property-subnode "Menu.Mozrepl"
+		;														 (let* ((menu (org-entry-get nil "menu"))
+		;																		(help (org-entry-get nil "help"))
+		;																		(code (trim-string (tt3-tt3-property-get-element :src-block))))
+		;															 (when menu (push `(,menu
+		;																									:func    (tt3-mozrepl-request ,code)
+		;																									:help    ,help)
+		;																								thinktank3-menu-string-list))))
+	)
+(add-hook 'thinktank3-menu-after-initialize-hook 'thinktank3-add-mozrepl-to-menu)
+
+(defun thinktank3-add-oneline-to-menu ()	;; 一行メモの関数定義＆登録
+		;; エラーでる。
+		'(loop for ( memoid name comm supl menu ) in (thinktank3-resource-index :name "Menu.Query.AssociateFile.oneline" :output :lisp)
+					 unless (equal menu "")
+					do (push `(,menu :func (tt3-resource-append-oneline :memoid ,memoid :name ,name) :help ,(concat "一行メモ:" name)) thinktank3-menu-string-list))
+		)
+(add-hook 'thinktank3-menu-after-initialize-hook 'thinktank3-add-oneline-to-menu)
+
+
 (thinktank3-menu-initialize)
+
+
+;;
+;; org setup
+;;
+
+;; WebSearchEnginesをorg-link-abbrev-alistに登録　文中 [[google:orexin leptin]] で検索できるようになる。
+(setq org-link-abbrev-alist nil)
+(mapcar-tt3-property-subnode "Menu.WebSearch" 
+														 (when (org-entry-get nil "orgtag")
+															 (push (cons (org-entry-get nil "orgtag") (replace-regexp-in-string "%input" "%s" (org-entry-get nil "url"))) org-link-abbrev-alist)))
 
 
 ;;
