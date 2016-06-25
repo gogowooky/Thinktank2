@@ -4,8 +4,6 @@
 (require 'helm-config)
 (require 'helm)
 
-(require 'popwin)
-
 ;;
 ;; [1/6] 固定メニュー
 ;; [2/6] menuの初期化
@@ -20,103 +18,37 @@
 ;; [1/6] 固定メニュー
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
-(defvar thinktank3-menu-string-list nil)
-(setq thinktank3-menu-default-string-list 
-			'(( "M|Memo C|Clipboard I|Id" :context "ext:howm" :func (push-string-to-clipboard (thinktank3-format :memofile (buffer-name))) :help "メモのIDをコピーする")
-				( "M|Memo C|Clipboard T|Title" :context "ext:howm" :func (save-excursion (goto-char (point-min)) (push-string-to-clipboard (current-line-string))) :help "メモのtitleをコピーする")
-				( "M|Memo C|Clipboard F|Filepath" :context "ext:howm"	:func (push-string-to-clipboard (thinktank3-format :memopath (buffer-name))) :help "メモのfilepathをコピーする")
-				( "M|Memo D|Delete" :context "ext:howm" :command thinktank3-resource-destroy-memo :help "メモを削除")
-				( "M|Memo V|Version M|Minor-up" :context "ext:howm" :command thinktank3-resource-minor-version-up :help "メモをマイナーバージョンアップ" )
-				( "M|Memo V|Version J|Major-up" :context "ext:howm" :command thinktank3-resource-major-version-up :help "メモをメジャーバージョンアップ" )
-				( "M|Memo B|Browse" :context "ext:howm" :command thinktank3-mozrepl-browse-memo :help "メモをbrowse")
-				( "M|Memo W|winword" :context "ext:howm" :command thinktank3-mozrepl-memo-docx :help "wordファイルを表示")
-				( "M|Memo M|Home" :command thinktank3-resource-show-top-memo :help "トップページ" )
-				( "M|Memo N|New" :command thinktank3-resource-create-memo :help "新しいメモを作成" )
-				( "M|Memo S|Save" :command thinktank3-resource-update-memo :help "メモを保存" )    
-				( "M|Memo X|Close" :command kill-buffer :help "メモを閉じる")
-				( "M|Memo R|Save-Region" :command thinktank3-resource-create-memo-from-region :help "選択領域を新規memoとして保存する")
-				
-				( "C|Calendar C|Show" :command thinktank3-calfw-show :help "カレンダーを開く")
-				( "C|Calendar G|SelectGroup" :command thinktank3-calfw-show-group :help "カレンダーグループを開く")
-				( "C|Calendar O|ShowOne" :command thinktank3-calfw-show-one :help "カレンダーを一種類のみ開く")
-				( "C|Calendar U|Update" :command thinktank3-calfw-update :help "カレンダーグループを選択して更新する")
-				( "C|Calendar S|SetCurrent" :command thinktank3-calfw-select :help "表示カレンダーを選択する")
+(defvar thinktank3-menu-default-string-list 
+	'(( "M|Menu C|Clipboard I|Id" :context "ext:howm" :func (push-string-to-clipboard (thinktank3-format :memofile (buffer-name))) :help "メモのIDをコピーする")
+		( "M|Menu L|UrlList" :func (tt3-menu-show-weburl :list) :help "URLリスト" )
+		( "M|Menu T|UrlList" :func (tt3-menu-show-weburl :tree) :help "URLリスト" )
+		( "T|Test 1|Test1" :func (msgbox "%s" (format-time-string "%Y-%m-%d %H:%M")) :help "テスト1")
+		( "T|Test 2|Test2" :func (msgbox "%s" input) :input :key :help "テスト2")
+		( "H|Help D|Document H|Help" :command help :help "ヘルプ")
+		( "H|Help E|Emacs" :info emacs :help "emacsのマニュアル")
+		( "H|Help L|Elisp" :info elisp :help "elispのマニュアル")))
 
-				( "e|emacs F|Footnote O|Open-file" :command thinktank3-org-open-footnote-file :help "footnote末尾のファイルを開く" )
-				( "e|emacs F|Footnote P|Open-pubmed" :command thinktank3-org-open-footnote-site :help "fornoteの引用論文をpubmedで検索" )
-				( "e|emacs e|emacs H|Helm-imenu" :command helm-imenu :help "helmでimenu")
-				( "e|emacs e|emacs R|Helm-regexp" :command helm-regexp :help "helmでregexp")
-				( "e|emacs e|emacs I|Isearch-occur" :command isearch-occur :help "検索")
-				( "e|emacs e|emacs R|Regexp-Builder" :command regexp-builder :help "Regexp Builder")
-				( "e|emacs U|View A|Set-Alpha" :command thinktank-set-alpha :help "透過度を設定する")
-				( "e|emacs U|View T|Toggle-Toolbar" :command thinktank-toggle-toolbar :help "toolbar表示をトグル" )
-				( "e|emacs U|View L|Toggle-Linum" :command thinktank-toggle-linum :help "行番号表示をトグル" )
-				( "e|emacs U|View M|Toggle-Menubar" :command thinktank-toggle-menubar :help "menubar表示をトグル" )
-				( "e|emacs U|View S|Toggle-Scrollbar" :command thinktank-toggle-scrollbar :help "scrollbarをトグル" )
-				( "e|emacs U|View F|Toggle-Fullscreen" :command thinktank-toggle-full :help "fullscreenをトグル" )
-				( "e|emacs U|View X|Toggle-Maximize" :command thinktank-toggle-expand :help "最大化をトグル" )
-				( "e|emacs U|View B|Text-Bending" :command thinktank-truncate-lines :help "折り畳みをトグル" )
-				( "e|emacs U|View I|Indent" :command thinktank-indent-all :help "インデントをそろえる" )
-				( "e|emacs U|View H|Word-Hilight-on" :command thinktank-highlight-word :help "ハイライトする" )
-				( "e|emacs U|View O|Word-Hilight-off" :command thinktank-unhilight :help "ハイライトを止める")	
-
-				( "I|Insert N|Node D|Date" :command thinktank3-org-insert-new-node :help "新しいtimestamp付きの節を挿入")
-				( "I|Insert N|Node F|Firefox" :command thinktank3-mozrepl-insert-current-page-node :help "firefoxのcurrent pageへのlinkを挿入" )
-				( "I|Insert D|Date" :command thinktank3-org-insert-current-time :help "timestampを挿入")
-				( "I|Insert F|Firefox" :command thinktank3-mozrepl-insert-current-page-link :help "firefoxのcurrent pageへのlinkを挿入" )
-
-				( "t|tt.config W|Restart-webrick" :command thinktank3-webrick :help "local webrick serverを起動する" )
-				( "t|tt.config D|Directory" :command thinktank3-util-open-directory :help "ディレクトリを開く" )
-				( "t|tt.config L|Reload-memo" :command thinktank3-resource-reload :help "メモをリロードする" )
-				( "t|tt.config S|Restruct-memo" :command thinktank3-resource-restruct :help "メモをリロードする" )
-				( "t|tt.config O|Object" :command thinktank3-resource-show-property-object :help "objectの数を数える" )
-				( "t|tt.config A|AutoSelect" :command thinktank3-menu-select-one-automatically :help "helmで１つに絞り込んだら自動選択")
-				( "t|tt.config M|Menu-Initialize" :command thinktank3-menu-initialize :help "menuを更新する" )
-
-				( "W|Web S|Search R|Ruby M|Rurima" :command thinktank3-mozrepl-rurema-search :help "るりまさーち")
-				( "W|Web S|Search R|Ruby R|RubyRef" :command thinktank3-mozrepl-rubyref-search :help "Rubyリファレンス" )
-				( "W|Web F|Firefox" :command thinktank3-mozrepl-remote :help "MozRepl" )
-
-				( "W|Web R|Recorded L|List" :func (tt3-menu-show-weburl :list) :help "URLリスト" )
-				( "W|Web R|Recorded T|Tree" :func (tt3-menu-show-weburl :tree) :help "URLリスト" )
-
-				( "h|help S|SearchInfo W|word" :command thinktank3-search-forward-focused-string :help "キーワードジャンプ")
-				( "h|help S|SearchInfo L|Elisp" :helm helm-source-info-elisp :help "elisp検索")
-				( "h|help S|SearchInfo E|Emacs" :helm helm-source-info-emacs :help "emacs検索")
-				( "h|help S|SearchInfo I|Info" :helm helm-source-info-info :help "info検索")
-				( "h|help S|SearchInfo C|Cl" :helm helm-source-info-cl :help "common lisp検索")
-				( "h|help S|SearchInfo O|Org" :helm helm-source-info-org :help "org検索")
-				( "h|help I|Info H|Help" :command help :help "ヘルプ")
-				( "h|help I|Info U|Url" :info url :help "urlのマニュアル")
-				( "h|help I|Info S|Eshell" :info eshell :help "eshellのマニュアル")
-				( "h|help I|Info O|Orgmode" :info org :help "orgのマニュアル")
-				( "h|help I|Info C|Cl" :info cl :help "clのマニュアル")
-				( "h|help E|Emacs" :info emacs :help "emacsのマニュアル")
-				( "h|help L|Elisp" :info elisp :help "elispのマニュアル")
-				( "h|help T|Test 1|Test1" :func (msgbox "%s" (format-time-string "%Y-%m-%d %H:%M")) :help "テスト1")
-				( "h|help T|Test 2|Test2" :func (msgbox "%s" input) :input :key :help "テスト2")
-				( "h|help T|Test F|File" :func (tt3-menu-show-keymap-menu menu-bar-files-menu :list) :help "ファイルメニュー" )
-				( "h|help T|Test O|Options" :func (tt3-menu-show-keymap-menu menu-bar-options-menu :list) :help "オプションメニュー" )
-				( "h|help T|Test M|Manuals" :func (tt3-menu-show-keymap-menu menu-bar-manuals-menu :list) :help "マニュアルメニュー" )
-				( "h|help T|Test C|Context" :func (msgbox "context:%S" tt3-menu-context) :help "contextを表示")
-				))
-
-
-
+(defvar thinktank3-menu-string-list nil) 
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
 ;; [2/6] menuの初期化
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
+(defvar thinktank3-menu-before-initialize-hook nil)
+(defvar thinktank3-menu-after-initialize-hook nil)
+
 (defun thinktank3-menu-initialize () (interactive) "   (thinktank3-menu-initialize)
 * [説明] 各所で設定されているメニュー設定値を収集し、thinktank menuを再構成する
   [注意] thinktank起動の最後(tt.elの最後)に一度実行している。 "
+
+	(run-hooks 'thinktank3-menu-before-initialize-hook)
+
 	(let* ()
 		(thinktank3-property :reset)
 
 		;; デフォルトメニューの登録
-		(setq thinktank3-menu-string-list thinktank3-menu-default-string-list)
+		(or thinktank3-menu-string-list (setq thinktank3-menu-string-list thinktank3-menu-default-string-list))
 
 		;; web search engine の登録
 		(mapcar-tt3-property-subnode "Menu.WebSearch"
@@ -165,7 +97,9 @@
 					 unless (equal menu "")
 					do (push `(,menu :func (tt3-resource-append-oneline :memoid ,memoid :name ,name) :help ,(concat "一行メモ:" name)) thinktank3-menu-string-list))
 		
-		))
+		)
+	(run-hooks 'thinktank3-menu-after-initialize-hook)
+	)
 
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
@@ -203,7 +137,7 @@
 																								(fnc (eval fnc)))))))
 		
 		(case menu-type
-			(:tree (let* ((res (tt3-popwin-show-menu (tt3-menu-stringlist-to-tree string-list))))
+			(:tree (let* ((res (tt3-menu-popwin-show-menu (tt3-menu-stringlist-to-tree string-list))))
 							 (cond ((consp res) (do-action res)) ;; 通常実行
 										 ((and (stringp res) (string-match "tohelm:\\(.*\\) [^ ]+$" res)) (tt3-menu-show-stringlist-menu string-list :list (match-string 1 res)))))) ;; helmに移行
 
@@ -290,7 +224,7 @@
 																										 (cddr item)))))
 		(case menu-type
 			(:popup (popup-menu keymap-menu))
-			(:tree (tt3-popwin-show-menu (list (keymapmenu-to-tree (copy-tree keymap-menu)))))
+			(:tree (tt3-menu-popwin-show-menu (list (keymapmenu-to-tree (copy-tree keymap-menu)))))
 			(:list (helm :sources `((name . "thinktank action")
 															(candidates . ,(itemlist-to-stringlist (tree2list (list (keymapmenu-to-tree (copy-tree keymap-menu))))))
 															(candidate-transformer .  tt3-menu-stringlist-to-helm-candidates)
@@ -490,6 +424,7 @@
 ;;
 ;; popwin ( https://github.com/m2ym/popwin-el/tree/v0.3 ) の設定とメニュー表示
 ;;
+(require 'popwin)
 
 ;;
 ;; 引数menutree は tree形式。 固定メニューは helmに適した string-list形式。
@@ -498,22 +433,22 @@
 ;; tree:         (tt3-menu-stringlist-to-tree thinktank3-menu-default-string-list)
 ;;
 
-(defvar tt3-popwin-buffer-name "*popwin-menu*")
-(defvar tt3-popwin-buffer-height 15)
-(push `(,tt3-popwin-buffer-name :position bottom :dedicated t :stick t :height ,tt3-popwin-buffer-height) popwin:special-display-config)
+(defvar tt3-menu-popwin-buffer-name "*popwin-menu*")
+(defvar tt3-menu-popwin-buffer-height 15)
+(push `(,tt3-menu-popwin-buffer-name :position bottom :dedicated t :stick t :height ,tt3-menu-popwin-buffer-height) popwin:special-display-config)
 (setq display-buffer-function 'popwin:display-buffer)
 
-(defun tt3-popwin-show-menu ( menutree ) 
+(defun tt3-menu-popwin-show-menu ( menutree ) 
 	(when (helm-alive-p) (error "Error: Trying to run helm within a running helm session"))
 	(unwind-protect 
 			(let* ((curpos '(0)) (maxline 50) seltree candtree curhigh curwidt preceding-input input-key selitems)
 				
 				;; popwinの設定
-				(get-buffer-create tt3-popwin-buffer-name)
+				(get-buffer-create tt3-menu-popwin-buffer-name)
 				(make-variable-buffer-local 'global-hl-line-mode) 
 				(setq global-hl-line-mode nil)				
 				(thinktank-switch-ime nil)
-				(popwin:display-buffer tt3-popwin-buffer-name)
+				(popwin:display-buffer tt3-menu-popwin-buffer-name)
 				
 				(catch 'exit-menu
 					(while t
@@ -527,7 +462,7 @@
 										do (progn
 												 (setq curhigh (length curtree))
 												 (setq curwidt (loop for item in curtree maximize (length (car item))))
-												 (set-window-text-height (get-buffer-window) (if (and (< (- tt3-popwin-buffer-height 1) curhigh)	(< curhigh 50)) curhigh tt3-popwin-buffer-height)) ; window高調整
+												 (set-window-text-height (get-buffer-window) (if (and (< (- tt3-menu-popwin-buffer-height 1) curhigh)	(< curhigh 50)) curhigh tt3-menu-popwin-buffer-height)) ; window高調整
 												 (loop for ( caption . param ) in curtree ;; メニュー描画
 															 for row from 0 to maxline
 															 do (progn (goto-line (+ row 1))
@@ -590,7 +525,7 @@
 		;; popwinの後始末
 		(ignore-errors
 			(popwin:close-popup-window)
-			(kill-buffer tt3-popwin-buffer-name))))
+			(kill-buffer tt3-menu-popwin-buffer-name))))
 
 
 (provide 'tt3-menu)
