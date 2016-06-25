@@ -5,8 +5,8 @@
 (require 'helm)
 
 ;;
-;; [1/6] 固定メニュー
-;; [2/6] menuの初期化
+;; [1/6] 各種メニュー表示コマンド
+;; [2/6] メニューの初期化
 ;; [3/6] メニューデータ整形
 ;; [4/6] helm自動選択
 ;; [5/6] コンテキスト記録
@@ -15,10 +15,24 @@
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
-;; [1/6] 固定メニュー
+;; [1/6] 各種メニュー表示コマンド
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
-(defvar thinktank3-menu-default-string-list 
+(defun thinktank3-menu-show-tree-menu ( &optional arg )        (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :tree)))
+(defun thinktank3-menu-show-list-menu ( &optional arg )        (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :list)))
+(defun thinktank3-menu-show-popup-menu ( &optional arg )       (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :popup)))
+(defun thinktank3-resource-show-web-url-list ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-weburl :list)))
+(defun thinktank3-resource-show-web-url-tree ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-weburl :tree)))
+(defun thinktank3-resource-show-help-menu-list ( &optional arg )    (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-keymap-menu menu-bar-help-menu :list)))
+(defun thinktank3-resource-show-help-menu-tree ( &optional arg )    (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-keymap-menu menu-bar-help-menu :tree)))
+
+
+;;--------------------------------------------------------------------------------------------------------------------------------------------
+;;
+;; [2/6] メニューの初期化
+;;
+;;--------------------------------------------------------------------------------------------------------------------------------------------
+(defvar tt3-menu-default-string-list 
 	'(( "M|Menu C|Clipboard I|Id" :context "ext:howm" :func (push-string-to-clipboard (thinktank3-format :memofile (buffer-name))) :help "メモのIDをコピーする")
 		( "M|Menu L|UrlList" :func (tt3-menu-show-weburl :list) :help "URLリスト" )
 		( "M|Menu T|UrlList" :func (tt3-menu-show-weburl :tree) :help "URLリスト" )
@@ -28,45 +42,35 @@
 		( "H|Help E|Emacs" :info emacs :help "emacsのマニュアル")
 		( "H|Help L|Elisp" :info elisp :help "elispのマニュアル")))
 
-(defvar thinktank3-menu-string-list nil) 
-
-;;--------------------------------------------------------------------------------------------------------------------------------------------
-;;
-;; [2/6] menuの初期化
-;;
-;;--------------------------------------------------------------------------------------------------------------------------------------------
+(defvar tt3-menu-string-list nil) 
 (defvar thinktank3-menu-before-initialize-hook nil)
 (defvar thinktank3-menu-after-initialize-hook nil)
 
 (defun thinktank3-menu-initialize () (interactive) "   (thinktank3-menu-initialize)
 * [説明] 各所で設定されているメニュー設定値を収集し、thinktank menuを再構成する
   [注意] 
-	 (setq thinktank3-menu-string-list [メニュー] )                 ; メニューを設定する
+	 (setq tt3-menu-string-list [メニュー] )                 ; メニューを設定する
 	 (add-hook 'thinktank3-menu-before-initialize-hook [初期化] )   ; 追加の初期化指定(optional)
 	 (thinktank3-menu-initialize)                                   ; 初期化
-
-	 (define-key map (kbd ”C-/”) 'thinktank3-menu-show-tree-menu)   ; 呼び出し
-	 (define-key map (kbd ”C-?”) 'thinktank3-menu-show-list-menu)   ; 呼び出し"
+	 (define-key map (kbd ”C-/”) 'thinktank3-menu-show-tree-menu)   ; 呼び出し"
 
 	(run-hooks 'thinktank3-menu-before-initialize-hook)
-	(or thinktank3-menu-string-list (setq thinktank3-menu-string-list thinktank3-menu-default-string-list))  ;; デフォルトメニューの登録
+	(or tt3-menu-string-list 
+			(setq tt3-menu-string-list tt3-menu-default-string-list))  ;; デフォルトメニューの登録
 	(run-hooks 'thinktank3-menu-after-initialize-hook))
 
 
-
-
+(defun thinktank3-menu-clear () (setq tt3-menu-string-list nil))
+(defun thinktank3-menu-add ( items ) 
+	(if (stringp (car items))
+			(push items	tt3-menu-string-list)
+		(setq tt3-menu-string-list (append tt3-menu-string-list items))))
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
 ;; [3/6] メニューデータ整形
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
-(defun thinktank3-menu-show-tree-menu ( &optional arg )        (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu thinktank3-menu-string-list :tree)))
-(defun thinktank3-menu-show-list-menu ( &optional arg )        (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu thinktank3-menu-string-list :list)))
-(defun thinktank3-menu-show-popup-menu ( &optional arg )       (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu thinktank3-menu-string-list :popup)))
-(defun thinktank3-resource-show-web-url-list ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-weburl :list)))
-(defun thinktank3-resource-show-web-url-tree ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-weburl :tree)))
-
 ;; string-list形式メニューをtree/listで表示する
 (defun tt3-menu-show-stringlist-menu ( string-list menu-type &optional input ) "
 * [説明] strlig-list menuをtree/list/popup表示する
@@ -147,7 +151,6 @@
 ;; (tt3-menu-show-weburl :list)
 
 
-
 ;; keymapメニューをtree/listで表示する  ;; (tt3-menu-show-keymap-menu menu-bar-help-menu :list)
 (defun tt3-menu-show-keymap-menu ( keymap-menu menu-type ) "
 * [説明] keymap menuをtree/list/popup表示する
@@ -189,7 +192,6 @@
 
 
 
-
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
 ;; [4/6] helm自動選択
@@ -212,18 +214,6 @@
 (add-hook 'helm-after-update-hook 'tt3-menu-one-candidate)
 ;; (remove-hook 'helm-update-hook 'tt3-menu-one-candidate)
 
-
-
-
-
-'(
-	(with-tt3-context arg
-										(tt3-tt3-context)
-										 )
-	(loop-tt3-property
-	 (tt3-tt3-peoperty)
-	 )
-)
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
 ;; [5/6] コンテキスト記録
@@ -320,7 +310,7 @@
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 
-;; thinktankの基本menu formatはthinktank3-menu-default-string-listの形式  (string list形式)
+;; thinktankの基本menu formatはtt3-menu-default-string-listの形式  (string list形式)
 (defun tt3-menu-stringlist-to-helm-candidates ( string-list )
 	(let* ((helm-candidates string-list))
 
@@ -383,8 +373,8 @@
 ;;
 ;; 引数menutree は tree形式。 固定メニューは helmに適した string-list形式。
 ;;
-;; string-list:  thinktank3-menu-default-string-list
-;; tree:         (tt3-menu-stringlist-to-tree thinktank3-menu-default-string-list)
+;; string-list:  tt3-menu-default-string-list
+;; tree:         (tt3-menu-stringlist-to-tree tt3-menu-default-string-list)
 ;;
 
 (defvar tt3-menu-popwin-buffer-name "*popwin-menu*")
