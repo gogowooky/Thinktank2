@@ -109,17 +109,18 @@
 
 (defun thinktank3-add-search-engine-to-menu ()	;; web search engine の登録
 	(mapcar-tt3-property-subnode "Menu.WebSearch"
-															 (let ((menu (org-entry-get nil "menu"))(url (org-entry-get nil "url")) (help (org-entry-get nil "help")))
-																 (when menu
-																	 (when (string-match "\\[\\[\\([^\]]+\\)\\]\\[\\([^\]]+\\)?\\]\\]" url)
-																		 (setq help (concat (when help (concat help ": ")) (match-string 2 url)))
-																		 (setq url  (match-string 1 url)))
-																	 (thinktank3-menu-add `(,menu
-																													:url     ,url
-																													:help    ,help
-																													:input   ,(intern (org-entry-get nil "input"))
-																													:context ,(org-entry-get nil "context")
-																													:message ,(org-entry-get nil "message")))))))
+															 (let ((menu (org-entry-get nil "menu"))
+																		 (url  (org-entry-get nil "url")) 
+																		 (help (org-entry-get nil "help")))
+																 (when menu (when (string-match "\\[\\[\\([^\]]+\\)\\]\\[\\([^\]]+\\)?\\]\\]" url)
+																							(setq help (concat (when help (concat help ": ")) (match-string 2 url)))
+																							(setq url  (match-string 1 url)))
+																			 (thinktank3-menu-add `(,menu
+																															:url     ,url
+																															:help    ,help
+																															:input   ,(intern (org-entry-get nil "input"))
+																															:context ,(org-entry-get nil "context")
+																															:message ,(org-entry-get nil "message")))))))
 (add-hook 'thinktank3-menu-after-initialize-hook 'thinktank3-add-search-engine-to-menu)
 
 

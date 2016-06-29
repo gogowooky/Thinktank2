@@ -49,14 +49,13 @@
 (defun thinktank3-menu-initialize () (interactive) "   (thinktank3-menu-initialize)
 * [説明] 各所で設定されているメニュー設定値を収集し、thinktank menuを再構成する
   [注意] 
-	 (setq tt3-menu-string-list [メニュー] )                 ; メニューを設定する
+	 (thinktank3-menu-add [メニュー] )                              ; メニューを設定する
 	 (add-hook 'thinktank3-menu-before-initialize-hook [初期化] )   ; 追加の初期化指定(optional)
 	 (thinktank3-menu-initialize)                                   ; 初期化
 	 (define-key map (kbd ”C-/”) 'thinktank3-menu-show-tree-menu)   ; 呼び出し"
 
 	(run-hooks 'thinktank3-menu-before-initialize-hook)
-	(or tt3-menu-string-list 
-			(setq tt3-menu-string-list tt3-menu-default-string-list))  ;; デフォルトメニューの登録
+	(setq tt3-menu-string-list (or tt3-menu-string-list tt3-menu-default-string-list))  ;; デフォルトメニューの登録
 	(run-hooks 'thinktank3-menu-after-initialize-hook))
 
 

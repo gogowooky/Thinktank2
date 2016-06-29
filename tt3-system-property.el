@@ -1,4 +1,12 @@
-;; tt-system.l; -*- mode: emacs-lisp; coding: utf-8 -*-
+;; tt-system-property.el; -*- mode: emacs-lisp; coding: utf-8 -*-
+
+;; [1/6] thinktank3-property:  システムメモ(0000-00-00-00000?.howm)に記載したシステムプロパティを読み出す。
+;; (thinktank3-property node-address key value )
+;;
+;; [2/6] thinktank3-config: 
+;;
+;;
+
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
 ;; [1/6] thinktank3-property:  システムメモ(0000-00-00-00000?.howm)に記載したシステムプロパティを読み出す。
@@ -75,6 +83,7 @@
 																																								(get-node-heading-and-pos (+ 1 lvl) elemttl orig)))))))
 			;; 最後のｱｲﾃﾑで抜け出せなくなる
 			(setq tt3-property (get-node-heading-and-pos 1 "" "")))))   ;;  (insert (format "%S" (tt3-property-initialize t)))
+
 
 
 
