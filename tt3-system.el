@@ -2,7 +2,28 @@
 (require 'url)
 (require 'json)
 
-(require 'tt3-system-property)
+(require 'tt3-system-property) ;; thinktank-resource
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; (thinktank3-format &optional param )
+;; (thinktank3-system-open-memo    &key memoid name )
+;; (thinktank3-system-save-memo    &key memoid content verup name )
+;; (thinktank3-system-destroy-memo &key memoid )
+;; (thinktank3-system-index-memo   &key action body lookup prop min max begin end keyword )
+;; (thinktank3-webrick)
+;;
+;; (thinktank3-util-open-directory) (interactive)
+;;
+;; thinktank3-util-user-directories
+;; thinktank3-util-current-memo-directory
+;; thinktank3-util-thinktank-directory
+;; thinktank3-util-memo-directory
+;; thinktank3-util-user-directory
+;; thinktank-directory
+;;
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;

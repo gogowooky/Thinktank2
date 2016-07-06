@@ -1,5 +1,5 @@
 ;;;; -*- mode: emacs-lisp; coding: utf-8 -*-
-;;; tt.el  thinktank
+;;; tt.el
 (setq debug-on-error t)
 (require 'cl)
 (require 'em-glob)
@@ -7,17 +7,37 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; load library 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'tt-util)        ;; elisp, emacs
-(require 'tt3-system)     ;; thinktank-resource
-(require 'tt3-resource)   ;; thinktank-resource
-(require 'tt3-calfw)      ;; emacs, thinktank-resource
-(require 'tt3-oauth2)     ;; emacs, thinktank-resource
-(require 'tt3-dnd)        ;; emacs, thinktank-system
-(require 'tt3-org)        ;; emacs, thinktank-system
-(require 'tt3-mozrepl)    ;; emacs, thinktank-system
-(require 'tt3-menu)       ;; thinktank-system
-(require 'tt3-mode)       ;; thinktank-system
+(require 'tt-util)             ;; elisp, emacs
+(require 'tt3-system)          ;; thinktank-resource
+(require 'tt3-resource)        ;; thinktank-resource
+(require 'tt3-calfw)           ;; emacs, thinktank-resource
+(require 'tt3-oauth2)          ;; emacs, thinktank-resource
+(require 'tt3-dnd)             ;; emacs, thinktank-system
+(require 'tt3-org)             ;; emacs, thinktank-system
+(require 'tt3-mozrepl)         ;; emacs, thinktank-system
+(require 'tt3-menu)            ;; thinktank-system
+(require 'tt3-mode)            ;; thinktank-system
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 開発上のルール
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 命名法：
+;;   Public関数  : thinktank-xxxxx-
+;;   Public変数  : thinktank-xxxxx-
+;;   Local関数   : tt3-xxxx-
+;;   Local変数   : tt3-xxxx-
+;;
+;; ライブラリ構成：
+;;   Public関数一覧
+;;   Public変数一覧
+;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; 無し
+;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; property setup
@@ -107,7 +127,9 @@
 											 ( "h|Help C|Context" :func (msgbox "context:%S" tt3-menu-context) :help "contextを表示")
 											 ))
 
-(defun thinktank3-add-search-engine-to-menu ()	;; web search engine の登録
+(require 'tt3-config)
+
+(defun tt-hook-search-engine-to-menu ()	;; web search engine の登録
 	(mapcar-tt3-property-subnode "Menu.WebSearch"
 															 (let ((menu (org-entry-get nil "menu"))
 																		 (url  (org-entry-get nil "url")) 
@@ -121,10 +143,10 @@
 																															:input   ,(intern (org-entry-get nil "input"))
 																															:context ,(org-entry-get nil "context")
 																															:message ,(org-entry-get nil "message")))))))
-(add-hook 'thinktank3-menu-after-initialize-hook 'thinktank3-add-search-engine-to-menu)
+(add-hook 'thinktank3-menu-after-initialize-hook 'tt-hook-search-engine-to-menu)
 
 
-(defun thinktank3-add-query-to-menu ()	;; Query 関連の登録
+(defun tt-hook-query-to-menu ()	;; Query 関連の登録
 	(mapcar-tt3-property-subnode "Menu.Query"
 															 (let* ((menu (org-entry-get nil "menu"))
 																			(help (org-entry-get nil "help")))
@@ -133,9 +155,9 @@
 																																	 ;; :func    (thinktank3-resource-index :name ,menu)
 																																	 :help    ,help
 																																	 :context ,(org-entry-get nil "context")))))))
-(add-hook 'thinktank3-menu-after-initialize-hook 'thinktank3-add-query-to-menu)
+(add-hook 'thinktank3-menu-after-initialize-hook 'tt-hook-query-to-menu)
 
-(defun thinktank3-add-mozrepl-to-menu ()	;; MozRepl 関連の登録
+(defun tt-hook-mozrepl-to-menu ()	;; MozRepl 関連の登録
 	'(mapcar-tt3-property-subnode "Menu.Mozrepl"
 																(let* ((menu (org-entry-get nil "menu"))
 																			 (help (org-entry-get nil "help"))
@@ -143,21 +165,17 @@
 																	(when menu (thinktank3-menu-add `(,menu
 																																		:func    (tt3-mozrepl-request ,code)
 																																		:help    ,help))))))
-(add-hook 'thinktank3-menu-after-initialize-hook 'thinktank3-add-mozrepl-to-menu)
+(add-hook 'thinktank3-menu-after-initialize-hook 'tt-hook-mozrepl-to-menu)
 
-(defun thinktank3-add-oneline-to-menu ()	;; 一行メモの関数定義＆登録
+(defun tt-hook-oneline-to-menu ()	;; 一行メモの関数定義＆登録
 	;; エラーでる。
 	'(loop for ( memoid name comm supl menu ) in (thinktank3-resource-index :name "Menu.Query.AssociateFile.oneline" :output :lisp)
 				 unless (equal menu "")
 				 do (thinktank3-menu-add `(,menu :func (tt3-resource-append-oneline :memoid ,memoid :name ,name) :help ,(concat "一行メモ:" name)))))
-(add-hook 'thinktank3-menu-after-initialize-hook 'thinktank3-add-oneline-to-menu)
+(add-hook 'thinktank3-menu-after-initialize-hook 'tt-hook-oneline-to-menu)
 
 
 (thinktank3-menu-initialize)
-
-
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org setup

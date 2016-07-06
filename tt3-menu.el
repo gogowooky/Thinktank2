@@ -4,10 +4,26 @@
 (require 'helm-config)
 (require 'helm)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
+;; (thinktank3-menu-clear)
+;; (thinktank3-menu-add items) 
+;;
+;; (thinktank3-menu-show-tree-menu  &optional arg ) (interactive "P")
+;; (thinktank3-menu-show-list-menu  &optional arg ) (interactive "P")
+;; (thinktank3-menu-show-popup-menu &optional arg ) (interactive "P")
+;; (thinktank3-menu-initialize () (interactive)
+;; (thinktank3-menu-select-one-automatically) (interactive)
+;; 
+;; thinktank3-menu-before-initialize-hook
+;; thinktank3-menu-after-initialize-hook
+;;
+;;
+
+
 ;; [1/6] 各種メニュー表示コマンド
-;; [2/6] メニューの初期化
-;; [3/6] メニューデータ整形
 ;; [4/6] helm自動選択
 ;; [5/6] コンテキスト記録
 ;; [6/6] メニュー表示関数
@@ -18,14 +34,9 @@
 ;; [1/6] 各種メニュー表示コマンド
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
-(defun thinktank3-menu-show-tree-menu ( &optional arg )        (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :tree)))
-(defun thinktank3-menu-show-list-menu ( &optional arg )        (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :list)))
-(defun thinktank3-menu-show-popup-menu ( &optional arg )       (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :popup)))
-(defun thinktank3-resource-show-web-url-list ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-weburl :list)))
-(defun thinktank3-resource-show-web-url-tree ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-weburl :tree)))
-(defun thinktank3-resource-show-help-menu-list ( &optional arg )    (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-keymap-menu menu-bar-help-menu :list)))
-(defun thinktank3-resource-show-help-menu-tree ( &optional arg )    (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-keymap-menu menu-bar-help-menu :tree)))
-
+(defun thinktank3-menu-show-tree-menu ( &optional arg )  (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :tree)))
+(defun thinktank3-menu-show-list-menu ( &optional arg )  (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :list)))
+(defun thinktank3-menu-show-popup-menu ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :popup)))
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
@@ -55,7 +66,9 @@
 	 (define-key map (kbd ”C-/”) 'thinktank3-menu-show-tree-menu)   ; 呼び出し"
 
 	(run-hooks 'thinktank3-menu-before-initialize-hook)
+
 	(setq tt3-menu-string-list (or tt3-menu-string-list tt3-menu-default-string-list))  ;; デフォルトメニューの登録
+
 	(run-hooks 'thinktank3-menu-after-initialize-hook))
 
 
@@ -64,132 +77,6 @@
 	(if (stringp (car items))
 			(push items	tt3-menu-string-list)
 		(setq tt3-menu-string-list (append tt3-menu-string-list items))))
-
-;;--------------------------------------------------------------------------------------------------------------------------------------------
-;;
-;; [3/6] メニューデータ整形
-;;
-;;--------------------------------------------------------------------------------------------------------------------------------------------
-;; string-list形式メニューをtree/listで表示する
-(defun tt3-menu-show-stringlist-menu ( string-list menu-type &optional input ) "
-* [説明] strlig-list menuをtree/list/popup表示する
-  [引数] string-list  : keymap
-         menu-type    : :tree | :list | :popup 
-         arg          : C-u 状態を植えとる "
-	
-	(flet ((do-action ( plist ) ;; stringlistのコマンドを実行
-										(catch 'input-error (let* (;; ↓コマンド取得
-																							 (cmd (getf plist :command))
-																							 (hlm (getf plist :helm))
-																							 (inf (getf plist :info))
-																							 (url (getf plist :url))
-																							 (fnc (getf plist :func))
-																							 ;; ↓ユーザー入力処理
-																							 (input (tt3-tt3-menu-get-input (getf plist :input) (getf plist :message))))
-																					;; ↓コマンドの実行
-																					(cond (cmd (funcall cmd))
-																								(hlm (helm :sources hlm :buffer "*submenu*"))
-																								(inf (info (symbol-name inf)))
-																								(url (browse-url (replace-regexp-in-string "%input" (url-hexify-string input) url)))
-																								(fnc (eval fnc)))))))
-		
-		(case menu-type
-			(:tree (let* ((res (tt3-menu-popwin-show-menu (tt3-menu-stringlist-to-tree string-list))))
-							 (cond ((consp res) (do-action res)) ;; 通常実行
-										 ((and (stringp res) (string-match "tohelm:\\(.*\\) [^ ]+$" res)) (tt3-menu-show-stringlist-menu string-list :list (match-string 1 res)))))) ;; helmに移行
-
-			(:list (helm :sources '((name . "thinktank action")
-															(candidates . string-list)
-															(candidate-transformer .  tt3-menu-stringlist-to-helm-candidates)
-															(action ("D|DoAction"  . (lambda (x) (do-action (cdr x))))
-																			("S|show" . (lambda (x) (msgbox "%S" (cdr x))))
-																			("I|Insert" . (lambda (x) (insert (format "%S" (cdr x))))))
-															)
-									 :input input))
-			(:popup (flet ((tree-to-keymapmenu (tree)
-																				 (if (cddr tree)
-																						 `(,(intern (car tree)) menu-item ,(car tree) ,(or (getf tree :command) 'test))
-																					 `(,(intern (car tree)) menu-item ,(car tree) 
-																						 (keymap ,(car tree) ,@(loop for branch in (cadr tree) collect (tree-to-keymapmenu branch)))))))
-								(let ((tree (tt3-menu-stringlist-to-tree string-list)))
-									(popup-menu (cadddr (tree-to-keymapmenu (list "TT" tree))))))))))
-
-
-;; urlをtree/listで表示する
-(defun tt3-menu-show-weburl ( menu-type ) "
-* [説明] thinktank memo内のurlを列挙表示する
-  [引数] menu-type  : :tree | :list | :popup
-         arg        : C-u 状態を得る "
-
-	(case menu-type
-		(:list (let* ((source (thinktank3-resource-index :name "Extension.Queries.Misc.WebUrlList" :output :list)))
-						 (helm :sources `((name . "url")
-															(candidates . ,source)
-															(candidate-number-limit . 1000 )
-															(candidate-transformer  . (lambda (cands)
-																													(loop for cand in cands
-																																collect (progn
-																																					(string-match "\\([^ ]*\\) \\([^ ]*\\) \\([^ ]*\\) \\(.*\\)" cand) ;; (url id point addr)
-																																					(let* ((url   (match-string 1 cand))
-																																								 (id    (match-string 2 cand))
-																																								 (point (match-string 3 cand))
-																																								 (addr  (match-string 4 cand)))
-																																						(cons (format "%s %s  %s.howm::%s" 
-																																													(adjust-string addr 90)
-																																													(adjust-string url 40)
-																																													id point)
-																																									(list (match-string 2 cand) (match-string 3 cand) (match-string 1 cand))))))))
-															(action ("B|BrowseUrl" . (lambda (x) (loop for ( memoid jump url ) in (helm-marked-candidates) do (browse-url url))))
-																			("O|OpenMemo"  . (lambda (x) (loop for ( memoid jump url ) in (helm-marked-candidates) do (tt3-resource-show-memo :memoid memoid :jump jump))))
-																			("M|Msgbox"    . (lambda (x) (loop for item in (helm-marked-candidates) do (message "%S" item))))))
-									 :buffer "*web-url*")))
-		
-		(:tree  (tt3-menu-show-stringlist-menu (thinktank3-resource-index :name "Extension.Queries.Misc.WebUrlTree" :output :lisp) :tree))
-		(:popup (tt3-menu-show-stringlist-menu (thinktank3-resource-index :name "Extension.Queries.Misc.WebUrlTree" :output :lisp) :popup))))
-
-;; (tt3-menu-show-weburl :list)
-
-
-;; keymapメニューをtree/listで表示する  ;; (tt3-menu-show-keymap-menu menu-bar-help-menu :list)
-(defun tt3-menu-show-keymap-menu ( keymap-menu menu-type ) "
-* [説明] keymap menuをtree/list/popup表示する
-  [引数] keymap-menu  : keymap。　menu-bar-* で検索するといろいろ出てくる。
-         menu-type    : :tree | :list | :popup 
-         arg          : C-u 状態を植えとる "
-
-	(flet ((menustr (str) (concat (substring str 0 1) "|" (replace-regexp-in-string " " "_" str)))
-				 (keymapmenu-to-tree (km-menu)
-														 (list (menustr (find-if 'stringp km-menu))
-																	 (loop for item in (delete-if 'stringp (cdr km-menu))
-																				 if (and (cddr item) (symbolp (cddr item))) ;; (id "cap" . func ) but not (id "---")
-																				 collect (list (menustr (find-if 'stringp item))
-																											 :item
-																											 :command (cddr item)
-																											 :help (or (getf item :help) (find-if 'stringp item)))
-																				 else if (functionp (cadddr item)) ;; function
-																				 collect (list (menustr (find-if 'stringp item))
-																											 :item
-																											 :command (cadddr item)
-																											 :help (or (getf item :help) (caddr item)))
-																				 else if (and (null (functionp (cadddr item))) (consp (cadddr item))) ;; child menu
-																				 collect (keymapmenu-to-tree (cadddr item)))))
-
-				 (itemlist-to-stringlist (item-list)
-																 (loop for item in item-list
-																			 collect (cons (mapconcat 'identity (car item) " ")
-																										 (cddr item)))))
-		(case menu-type
-			(:popup (popup-menu keymap-menu))
-			(:tree (tt3-menu-popwin-show-menu (list (keymapmenu-to-tree (copy-tree keymap-menu)))))
-			(:list (helm :sources `((name . "thinktank action")
-															(candidates . ,(itemlist-to-stringlist (tree2list (list (keymapmenu-to-tree (copy-tree keymap-menu))))))
-															(candidate-transformer .  tt3-menu-stringlist-to-helm-candidates)
-															(action ("D|DoAction"  . (lambda (x) (tt3-menu-do-action (cdr x))))
-																			("S|show" . (lambda (x) (msgbox "%S" (cdr x))))
-																			("I|Insert" . (lambda (x) (insert (format "%S" (cdr x))))))))))))
-
-
-
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
@@ -308,6 +195,54 @@
 ;; [6/6] メニュー表示関数群
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
+
+;; string-list形式メニューをtree/listで表示する
+(defun tt3-menu-show-stringlist-menu ( string-list menu-type &optional input ) "
+* [説明] strlig-list menuをtree/list/popup表示する
+  [引数] string-list  : keymap
+         menu-type    : :tree | :list | :popup 
+         arg          : C-u 状態を植えとる "
+	
+	(flet ((do-action ( plist ) ;; stringlistのコマンドを実行
+										(catch 'input-error (let* (;; ↓コマンド取得
+																							 (cmd (getf plist :command))
+																							 (hlm (getf plist :helm))
+																							 (inf (getf plist :info))
+																							 (url (getf plist :url))
+																							 (fnc (getf plist :func))
+																							 ;; ↓ユーザー入力処理
+																							 (input (tt3-tt3-menu-get-input (getf plist :input) (getf plist :message))))
+																					;; ↓コマンドの実行
+																					(cond (cmd (funcall cmd))
+																								(hlm (helm :sources hlm :buffer "*submenu*"))
+																								(inf (info (symbol-name inf)))
+																								(url (browse-url (replace-regexp-in-string "%input" (url-hexify-string input) url)))
+																								(fnc (eval fnc)))))))
+		
+		(case menu-type
+			(:tree (let* ((res (tt3-menu-popwin-show-menu (tt3-menu-stringlist-to-tree string-list))))
+							 (cond ((consp res) (do-action res)) ;; 通常実行
+										 ((and (stringp res) (string-match "tohelm:\\(.*\\) [^ ]+$" res)) (tt3-menu-show-stringlist-menu string-list :list (match-string 1 res)))))) ;; helmに移行
+
+			(:list (helm :sources '((name . "thinktank action")
+															(candidates . string-list)
+															(candidate-transformer .  tt3-menu-stringlist-to-helm-candidates)
+															(action ("D|DoAction"  . (lambda (x) (do-action (cdr x))))
+																			("S|show" . (lambda (x) (msgbox "%S" (cdr x))))
+																			("I|Insert" . (lambda (x) (insert (format "%S" (cdr x))))))
+															)
+									 :input input))
+			(:popup (flet ((tree-to-keymapmenu (tree)
+																				 (if (cddr tree)
+																						 `(,(intern (car tree)) menu-item ,(car tree) ,(or (getf tree :command) 'test))
+																					 `(,(intern (car tree)) menu-item ,(car tree) 
+																						 (keymap ,(car tree) ,@(loop for branch in (cadr tree) collect (tree-to-keymapmenu branch)))))))
+								(let ((tree (tt3-menu-stringlist-to-tree string-list)))
+									(popup-menu (cadddr (tree-to-keymapmenu (list "TT" tree))))))))))
+
+
+
+
 
 ;; thinktankの基本menu formatはtt3-menu-default-string-listの形式  (string list形式)
 (defun tt3-menu-stringlist-to-helm-candidates ( string-list )

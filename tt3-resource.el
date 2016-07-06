@@ -5,6 +5,27 @@
 (require 'helm)
 (require 'cl)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; (thinktank3-resource-index &rest plist )
+;;
+;; (thinktank3-resource-reload) (interactive)
+;; (thinktank3-resource-restruct) (interactive)
+;; (thinktank3-resource-show-top-memo) (interactive)
+;; (thinktank3-resource-destroy-memo) (interactive)
+;; (thinktank3-resource-create-memo-from-region) (interactive) 
+;; (thinktank3-resource-create-memo () (interactive)
+;; (thinktank3-resource-create-memo-link () (interactive)
+;; (thinktank3-resource-update-memo () (interactive)
+;; (thinktank3-resource-major-version-up () (interactive)
+;; (thinktank3-resource-minor-version-up () (interactive)
+;; 
+;; thinktank-memo
+;; thinktank-tag
+;;
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; [1/3] リソースアクセスのためのインターフェイス関数
