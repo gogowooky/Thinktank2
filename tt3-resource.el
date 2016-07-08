@@ -11,16 +11,16 @@
 ;;
 ;; (thinktank3-resource-index &rest plist )
 ;;
-;; (thinktank3-resource-reload) (interactive)
-;; (thinktank3-resource-restruct) (interactive)
-;; (thinktank3-resource-show-top-memo) (interactive)
-;; (thinktank3-resource-destroy-memo) (interactive)
+;; (thinktank3-resource-reload)           (interactive)
+;; (thinktank3-resource-restruct)         (interactive)
+;; (thinktank3-resource-show-top-memo)    (interactive)
+;; (thinktank3-resource-destroy-memo)     (interactive)
 ;; (thinktank3-resource-create-memo-from-region) (interactive) 
-;; (thinktank3-resource-create-memo () (interactive)
-;; (thinktank3-resource-create-memo-link () (interactive)
-;; (thinktank3-resource-update-memo () (interactive)
-;; (thinktank3-resource-major-version-up () (interactive)
-;; (thinktank3-resource-minor-version-up () (interactive)
+;; (thinktank3-resource-create-memo)      (interactive)
+;; (thinktank3-resource-create-memo-link) (interactive)
+;; (thinktank3-resource-update-memo)      (interactive)
+;; (thinktank3-resource-major-version-up) (interactive)
+;; (thinktank3-resource-minor-version-up) (interactive)
 ;; 
 ;; thinktank-memo
 ;; thinktank-tag
@@ -40,34 +40,96 @@
 ;;
 
 																				; :show
-(defun* tt3-*-open-memo ( &key memoid name ) (thinktank3-system-open-memo :memoid memoid :name name))
+(defun* tt3-*-open-memo ( &key memoid name )
+	(cond (memoid (tt3-system-http-request :resource :memos
+																				 :action   :show
+																				 :id       (thinktank3-format :memoid memoid)))
+				(name   (tt3-system-http-request :resource :memos
+																				 :action   :index
+																				 :query    `((:lookup . [(:AND "object" :type "thinktankproperty")
+																																 (:AND "search" :target "name" :text ,name)
+																																 (:RESPONSE "first" :type "memo")]))))))
 																				; ruby側 thinktank.get_memo( req.id )
 																				; lisp側 examples
 																				; (tt3-*-open-memo :memoid "0000-00-00-000002")  ;; アクセス可、結果良
 																				; (tt3-*-open-memo :name "gtd-inbox")            ;; アクセス不可、結果不可
 
+
 																				; :create, :update
-(defun* tt3-*-save-memo ( &key memoid content verup name ) (thinktank3-system-save-memo :memoid memoid :content content :verup verup :name name))
-																				; ruby側 thinktank.update_memo!( req.id, req.body ) : id=nilのとき内部でcreate_memo呼び出す
+(defun* tt3-*-save-memo ( &key memoid content verup name ) 
+	(tt3-system-http-request :resource :memos
+													 :action   :update
+													 :id       (or (thinktank3-format :memoid memoid)
+																				 (thinktank3-format :memoid :now))
+													 :body     (cond ((stringp content) content)
+																					 ((get-buffer content) (with-current-buffer content (buffer-string))))
+													 :query    `((:optional . (:verup ,verup :name ,name)))))
+
+																			; ruby側 thinktank.update_memo!( req.id, req.body ) : id=nilのとき内部でcreate_memo呼び出す
 																				;        thinktank.create_memo!( req.id, req.body ) : 直接には呼び出されない
 																				; lisp側 examples
 																				; (tt3-*-save-memo :content "practice")
 																				; (tt3-*-save-memo :memoid "0000-00-00-000004" :content "practice")
 
 																				; :destroy
-(defun* tt3-*-destroy-memo ( &key memoid ) (thinktank3-system-destroy-memo :memoid memoid ))
+(defun* tt3-*-destroy-memo ( &key memoid )
+	(tt3-system-http-request :resource :memos
+													 :action   :destroy
+													 :id       memoid ))
+
 																				; ruby側 thinktank.delete_memo!( req.id )
 																				; lisp側 examples
 
 																				; :index
 (defun* tt3-*-index-memo ( &key action body lookup    prop min max begin end keyword ) 
-	(thinktank3-system-index-memo :action action :body body :prop prop :lookup lookup      :min min :max max :begin begin :end end :keyword keyword  ))
+	(setq keyword (url-hexify-string (encode-coding-string (or keyword "") 'utf-8-unix)))
+	(setq lookup (or lookup (case action
+														(:calfw-timed-text  `[(:AND "object" :type "linetimetag")
+																									(:AND "string" :prop "id" :min ,begin :max ,end)
+																									(:RESPONSE "list" :type "linetimetag" :sort "id" :order "asc" 
+																														 :display ":date \"[id]\" :link \"[memo.id].howm\" :jump \"[point]\" :caption \"[contents]\"")])
+														(t nil))))
+	(setq body (or body (case action 
+												(:memo-initialize  "initialize-memo")
+												(:memo-synchronize "synchronize-memo")
+												(t ""))))
+								 
+	(when (stringp lookup) (setq lookup (json-read-from-string lookup)))
+
+	(tt3-system-http-request
+	 :resource :memos
+	 :action   :index
+	 :body     body
+	 :query    `((:lookup . ,lookup) (:optional . ()))))
+
+
 																				; ruby側 thinktank.index_object( req.lookup, req.body )
 																				; lisp側 examples
 																				; (tt3-*-index-memo :action :memo-initialize)  ;; アクセス可、結果良
 																				; (tt3-*-index-memo :action :memo-synchronize) ;; アクセス可、結果良
 
 
+'((tt3-system-http-request :resource :memos :action :index :query `((:lookup . ((:query . [ "[ThinktankChapter]" ] )
+																																								(:list . "(memo.id).howm | (memo.title,%-30s) | memo:(title,%-30s)")
+																																								(:limit . "30") (:offset . "0")
+																																								(:sort . "address") (:order . "dsc")
+																																								))))
+	(tt3-*-index-memo :lookup '((:query . [ "[ThinktankProperty]" "key == thinktank-memo" ] )
+																					(:list . "(memo.id).howm | (key,%-20s) | (value,%-20s)")
+																					(:sort . "value") (:order . "dsc")))
+
+	(tt3-*-index-memo :lookup '((:query . [ "[ThinktankChapter]" ] )
+																					(:list . "(memo.id).howm | (memo.title,%-30s) | memo:(title,%-30s)")
+																					(:limit . "30") (:offset . "0") (:sort . "address") (:order . "dsc")))
+
+	(tt3-*-index-memo :lookup '((:query . [ "[ThinktankMemo]" "content =~ orexin" ] )
+																					(:list . "(id).howm | (weekday) | (title,%-30s)")
+																					(:limit . "30")	(:offset . "0")	(:sort . "id") (:order . "dsc")))
+
+
+	(tt3-*-index-memo :action :memo-initialize)
+	(tt3-*-index-memo :action :memo-synchronize)
+	)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
