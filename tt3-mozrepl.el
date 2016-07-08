@@ -73,11 +73,11 @@
 
 
 
-(defun thinktank3-mozrepl-memo-docx ( &optional memoid ) (interactive)
+(defun tt:mozrepl-memo-docx ( &optional memoid ) (interactive)
 	(tt3-mozrepl-request (format "content.location.href = 'http://localhost:20080/thinktank/memos/%s.docx'; " 
 															 (thinktank3-format :memoid (or memoid (thinktank3-menu-buffer-on-useraction))))))
 
-(defun thinktank3-mozrepl-browse-memo ( &optional memoid ) (interactive)
+(defun tt:mozrepl-browse-memo ( &optional memoid ) (interactive)
 	
 	(let* ((url (format "http://localhost:20080/thinktank/memos/%s.html" (thinktank3-format :memoid (or memoid (thinktank3-menu-buffer-on-useraction)))))
 				 sections nest secnum)

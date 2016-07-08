@@ -24,10 +24,11 @@
 ;; 開発上のルール
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 命名法：
-;;   Public関数  : thinktank-xxxxx-
-;;   Public変数  : thinktank-xxxxx-
-;;   Local関数   : tt3-xxxx-
-;;   Local変数   : tt3-xxxx-
+;;   Publicコマンド : tt:xxxx-                 : 基本引数無
+;;   Public関数     : thinktank3-xxxxx-
+;;   Public変数     : thinktank3-xxxxx-
+;;   Local関数      : tt3-xxxx-
+;;   Local変数      : tt3-xxxx-
 ;;
 ;; ライブラリ構成：
 ;;   Public関数一覧
@@ -53,19 +54,19 @@
 (thinktank3-menu-add '(( "M|Memo C|Clipboard I|Id" :context "ext:howm" :func (push-string-to-clipboard (thinktank3-format :memofile (buffer-name))) :help "メモのIDをコピーする")
 											 ( "M|Memo C|Clipboard T|Title" :context "ext:howm" :func (save-excursion (goto-char (point-min)) (push-string-to-clipboard (current-line-string))) :help "メモのtitleをコピーする")
 											 ( "M|Memo C|Clipboard F|Filepath" :context "ext:howm"	:func (push-string-to-clipboard (thinktank3-format :memopath (buffer-name))) :help "メモのfilepathをコピーする")
-											 ( "M|Memo D|Delete" :context "ext:howm" :command thinktank3-resource-destroy-memo :help "メモを削除")
-											 ( "M|Memo V|Version M|Minor-up" :context "ext:howm" :command thinktank3-resource-minor-version-up :help "メモをマイナーバージョンアップ" )
-											 ( "M|Memo V|Version J|Major-up" :context "ext:howm" :command thinktank3-resource-major-version-up :help "メモをメジャーバージョンアップ" )
-											 ( "M|Memo B|Browse" :context "ext:howm" :command thinktank3-mozrepl-browse-memo :help "メモをbrowse")
-											 ( "M|Memo W|winword" :context "ext:howm" :command thinktank3-mozrepl-memo-docx :help "wordファイルを表示")
-											 ( "M|Memo M|Home" :command thinktank3-resource-show-top-memo :help "トップページ" )
-											 ( "M|Memo N|New" :command thinktank3-resource-create-memo :help "新しいメモを作成" )
-											 ( "M|Memo S|Save" :command thinktank3-resource-update-memo :help "メモを保存" )
+											 ( "M|Memo D|Delete" :context "ext:howm" :command tt:resource-destroy-memo :help "メモを削除")
+											 ( "M|Memo V|Version M|Minor-up" :context "ext:howm" :command tt:resource-minor-version-up :help "メモをマイナーバージョンアップ" )
+											 ( "M|Memo V|Version J|Major-up" :context "ext:howm" :command tt:resource-major-version-up :help "メモをメジャーバージョンアップ" )
+											 ( "M|Memo B|Browse" :context "ext:howm" :command tt:mozrepl-browse-memo :help "メモをbrowse")
+											 ( "M|Memo W|winword" :context "ext:howm" :command tt:mozrepl-memo-docx :help "wordファイルを表示")
+											 ( "M|Memo M|Home" :command tt:resource-show-top-memo :help "トップページ" )
+											 ( "M|Memo N|New" :command tt:resource-create-memo :help "新しいメモを作成" )
+											 ( "M|Memo S|Save" :command tt:resource-update-memo :help "メモを保存" )
 											 ( "M|Memo X|Close" :command kill-buffer :help "メモを閉じる")
-											 ( "M|Memo R|Save-Region" :command thinktank3-resource-create-memo-from-region :help "選択領域を新規memoとして保存する")
+											 ( "M|Memo R|Save-Region" :command tt:resource-create-memo-from-region :help "選択領域を新規memoとして保存する")
 											 
-											 ( "C|Calendar C|Show" :command thinktank3-calfw-show :help "カレンダーを開く")
-											 ( "C|Calendar G|SelectGroup" :command thinktank3-calfw-show-group :help "カレンダーグループを開く")
+											 ( "C|Calendar C|Show" :command tt:calfw-show :help "カレンダーを開く")
+											 ( "C|Calendar G|SelectGroup" :command tt:calfw-show-group :help "カレンダーグループを開く")
 											 ( "C|Calendar O|ShowOne" :command thinktank3-calfw-show-one :help "カレンダーを一種類のみ開く")
 											 ( "C|Calendar U|Update" :command thinktank3-calfw-update :help "カレンダーグループを選択して更新する")
 											 ( "C|Calendar S|SetCurrent" :command thinktank3-calfw-select :help "表示カレンダーを選択する")

@@ -13,14 +13,14 @@
 ;;
 ;; (thinktank3-resource-reload)           (interactive)
 ;; (thinktank3-resource-restruct)         (interactive)
-;; (thinktank3-resource-show-top-memo)    (interactive)
-;; (thinktank3-resource-destroy-memo)     (interactive)
-;; (thinktank3-resource-create-memo-from-region) (interactive) 
-;; (thinktank3-resource-create-memo)      (interactive)
+;; (tt:resource-show-top-memo)    (interactive)
+;; (tt:resource-destroy-memo)     (interactive)
+;; (tt:resource-create-memo-from-region) (interactive) 
+;; (tt:resource-create-memo)      (interactive)
 ;; (thinktank3-resource-create-memo-link) (interactive)
-;; (thinktank3-resource-update-memo)      (interactive)
-;; (thinktank3-resource-major-version-up) (interactive)
-;; (thinktank3-resource-minor-version-up) (interactive)
+;; (tt:resource-update-memo)      (interactive)
+;; (tt:resource-major-version-up) (interactive)
+;; (tt:resource-minor-version-up) (interactive)
 ;; 
 ;; thinktank-memo
 ;; thinktank-tag
@@ -33,10 +33,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; ruby側で必要な引値
-;;
-
-;;
-;; バッファー毎にリソース元が違うような場合、ここでリソースを切り替える。
 ;;
 
 																				; :show
@@ -436,11 +432,11 @@
 
 
 																				; トップメモを開く
-(defun thinktank3-resource-show-top-memo () (interactive) (tt3-resource-show-memo :memoid "0000-00-00-000000"))
+(defun tt:resource-show-top-memo () (interactive) (tt3-resource-show-memo :memoid "0000-00-00-000000"))
 
 
 																				; メモを削除
-(defun thinktank3-resource-destroy-memo nil (interactive)
+(defun tt:resource-destroy-memo nil (interactive)
 	(tt3-resource-destroy-memo :memoid (thinktank3-format :memoid (buffer-name))) (kill-buffer))
 
 
@@ -461,7 +457,7 @@
 '((ad-disable-advice 'save-buffer 'around 'tt3-io-save-memo))
 
 ;; 新規メモを選択範囲で作成・保存
-(defun thinktank3-resource-create-memo-from-region () (interactive) 
+(defun tt:resource-create-memo-from-region () (interactive) 
 	(when (use-region-p) (let ((res (tt3-resource-save-memo :content (buffer-substring (region-beginning) (region-end)) :mode :create)))
 												 (switch-to-buffer (assoc-default "Buffer" res))
 												 (rename-buffer (thinktank3-format :memofile (assoc-default "Filename" res)))
@@ -469,7 +465,7 @@
 												 (goto-char (point-min)))))
 
 ;; 新規メモを作成・保存
-(defun thinktank3-resource-create-memo () (interactive)
+(defun tt:resource-create-memo () (interactive)
 	(let* ((template-memo    (replace-regexp-in-string "\\\\n" "\n" (thinktank3-config :template-memo)))
 				 (template-oneline (thinktank3-config :template-oneline))
 				 (res (tt3-resource-save-memo :content (format-time-string template-memo) :mode :create)))
@@ -494,20 +490,20 @@
 														:show t)))
 
 ;; 現メモを保存
-(defun thinktank3-resource-update-memo () (interactive)
+(defun tt:resource-update-memo () (interactive)
 	(tt3-resource-save-memo :memoid  (thinktank3-format :memoid (buffer-name)) 
 													:content (buffer-string)
 													:mode    :replace))
 
 ;; 現メモをマイナー version up
-(defun thinktank3-resource-major-version-up () (interactive) 
+(defun tt:resource-major-version-up () (interactive) 
 	(tt3-resource-save-memo :memoid  (thinktank3-format :memoid (buffer-name))
 													:content (buffer-string)
 													:verup   :major
 													:mode    :feedback))
 
 ;; 現メモをメジャー version up
-(defun thinktank3-resource-minor-version-up () (interactive)
+(defun tt:resource-minor-version-up () (interactive)
 	(tt3-resource-save-memo :memoid  (thinktank3-format :memoid (buffer-name))
 													:content (buffer-string) 
 													:verup   :minor
@@ -541,7 +537,7 @@
 			(beginning-of-buffer)
 			(re-search-forward "^$")
 			(insert (format "\n%s" (replace-regexp-in-string "\\\\n" "\n" template)))
-			(thinktank3-resource-update-memo))))
+			(tt:resource-update-memo))))
 
 
 
@@ -564,7 +560,7 @@
 						("S|Shell"         . (lambda (x) (mapc (lambda (item) (open-directory-with-os-shellwindow (thinktank3-format :memodir item))) (helm-marked-candidates))))
 						("H|Html"          . (lambda (x) (loop for item in (helm-marked-candidates)
 																									 for ( memoid . jump ) = (thinktank3-format :memolink item)
-																									 do  (thinktank3-mozrepl-browse-memo memoid))))
+																									 do  (tt:mozrepl-browse-memo memoid))))
 						("E|diered"        . (lambda (x) (dired (thinktank3-format :memodir (car (helm-marked-candidates))))))
 						)
 		(action-transformer . (lambda ( actions candidate )
