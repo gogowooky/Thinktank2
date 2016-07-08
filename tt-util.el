@@ -102,26 +102,29 @@
 ;; emacs 系関数
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
-(defun thinktank3-search-forward-focused-string () (interactive)
+(defun tt:search-forward-focused-string () (interactive)
 	(let ((key (focused-string)))
 		(when (setq key (read-string "search:" key))
 			(search-forward key nil t))))
 
-(defun thinktank-toggle-toolbar () (interactive)   (tool-bar-mode (if tool-bar-mode 0 1)))
-(defun thinktank-toggle-scrollbar () (interactive) (scroll-bar-mode (if scroll-bar-mode 0 1)))
-(defun thinktank-toggle-menubar () (interactive)   (menu-bar-mode (if menu-bar-mode 0 1)))
-(defun thinktank-toggle-expand () (interactive)
-	(thinktank-toggle-toolbar)
-	(thinktank-toggle-scrollbar)
-	(thinktank-toggle-menubar)
-	(thinktank-toggle-full))
+(defun tt:toggle-toolbar () (interactive)
+	(tool-bar-mode (if tool-bar-mode 0 1)))
+(defun tt:toggle-scrollbar () (interactive)
+	(scroll-bar-mode (if scroll-bar-mode 0 1)))
+(defun tt:toggle-menubar () (interactive)
+	(menu-bar-mode (if menu-bar-mode 0 1)))
+(defun tt:toggle-expand () (interactive)
+	(tt:toggle-toolbar)
+	(tt:toggle-scrollbar)
+	(tt:toggle-menubar)
+	(tt:toggle-full))
 
 (defun thinktank-toggle-linum () (interactive)
 	(set-face-attribute 'linum nil :foreground "#bf616a" :height 0.9)
 	(setq linum-format "%4d")
 	(linum-mode (if linum-mode 0 1)))
 
-(defun thinktank-toggle-full () (interactive)
+(defun tt:toggle-full () (interactive)
 	(case (window-system)
 		('w32 (setq tt3-emacs-toggle-full (null tt3-emacs-toggle-full))
 					(if tt3-emacs-toggle-full
@@ -132,10 +135,10 @@
 					(when (not (frame-parameter nil 'fullscreen)) 'maximized)))   ; fullboth)))
 		('x  (set-frame-parameter nil 'fullscreen (if (frame-parameter (selected-frame) 'fullscreen) nil 'fullboth)))))
 
-(defun thinktank-indent-all () (interactive)
+(defun tt:indent-all () (interactive)
 	(indent-region (point-min) (point-max)))
 
-(defun thinktank-truncate-lines () (interactive)
+(defun tt:truncate-lines () (interactive)
 	(setq truncate-partial-width-windows nil)
   ; (toggle-truncate-lines)
 	(setq truncate-lines (if truncate-lines nil t))
@@ -148,16 +151,15 @@
 
 
 (defvar thinktank-hilight-text "")
-(defun* thinktank-highlight-word ( &key keyword regexp )
-	(interactive)
-	(thinktank-unhilight)
+(defun* tt:highlight-word ( &key keyword regexp ) (interactive)
+	(tt:unhilight)
 	(setq thinktank-hilight-text (cond (keyword           (regexp-quote keyword))
 																						(regexp            regexp)
 																						((region-active-p) (regexp-quote (buffer-substring (region-beginning) (region-end))))
 																						(t                 (regexp-quote (read-string "word:" (thing-at-point 'word))))))
 	(highlight-regexp thinktank-hilight-text))
 
-(defun thinktank-unhilight () (interactive)
+(defun tt:unhilight () (interactive)
 	(unhighlight-regexp thinktank-hilight-text)
 	(setq thinktank-hilight-text nil))
 
@@ -166,7 +168,8 @@
 
 (defun thinktank-kill-read-string () (interactive) (kill-new (read-string "keyword:")))
 
-(defun thinktank-set-alpha ( &optional alpha ) (interactive) (set-frame-parameter nil 'alpha (or alpha (read-number "Input ratio: " 100))))
+(defun tt:set-alpha ( &optional alpha )
+	(interactive) (set-frame-parameter nil 'alpha (or alpha (read-number "Input ratio: " 100))))
 
 (defvar tt3-emacs-toggle-full nil)
 

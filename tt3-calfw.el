@@ -33,7 +33,7 @@
                      (candidates . ,group-cal)
                      (action ( "S|Show" . (lambda (x) (thinktank3-calfw-open-calendar :callist x))))))))
 
-(defun thinktank3-calfw-update () (interactive)
+(defun tt:calfw-update () (interactive)
 	(let* ((cal-set   (split-string (thinktank3-property "Extension.Queries.Calfw" "cal-set") "[, ]" nil))
 				 (calendars (delq nil (mapcar-tt3-property-subnode "Extension.Queries.Calfw" (if (org-entry-get nil "cal-group") (cons (format "%-30s | %s" (org-entry-get nil "caption") title ) title))))))
     (helm :sources `((name . "CalendarForUpdate")
@@ -44,13 +44,13 @@
 																						(cfw:refresh-calendar-buffer nil)
 																						'(thinktank3-calfw-open-calendar :callist cal-set))))))))
 
-(defun thinktank3-calfw-show-one () (interactive)
+(defun tt:calfw-show-one () (interactive)
 	(let* ((calendars (delq nil (mapcar-tt3-property-subnode "Extension.Queries.Calfw" (if (org-entry-get nil "cal-group") (cons (format "%-30s | %s" (org-entry-get nil "caption") title ) title))))))
     (helm :sources `((name . "CalendarForShowOne")
                      (candidates . ,calendars)
                      (action ( "S|Show" . (lambda (x) (thinktank3-calfw-open-calendar :callist (list x)))))))))
 
-(defun thinktank3-calfw-select () (interactive)
+(defun tt:calfw-select () (interactive)
 	(let* ((cal-set   (split-string (thinktank3-property "Extension.Queries.Calfw" "cal-set") "[, ]" nil))
 				 (preselect (format "\\(%s\\)" (mapconcat 'identity cal-set "\\|")))
 				 (calendars (delq nil (mapcar-tt3-property-subnode "Extension.Queries.Calfw" (if (org-entry-get nil "cal-group") (cons (format "%20s | %s" (org-entry-get nil "caption") title ) title)))))

@@ -11,8 +11,8 @@
 ;;
 ;; (thinktank3-resource-index &rest plist )
 ;;
-;; (thinktank3-resource-reload)           (interactive)
-;; (thinktank3-resource-restruct)         (interactive)
+;; (tt:resource-reload)           (interactive)
+;; (tt:resource-restruct)         (interactive)
 ;; (tt:resource-show-top-memo)    (interactive)
 ;; (tt:resource-destroy-memo)     (interactive)
 ;; (tt:resource-create-memo-from-region) (interactive) 
@@ -192,21 +192,21 @@
 									(goto-char (+ 1 (string-to-number jump))))
 								 
 								 ((string-match "^/.*" jump)                 ; 正規表現
-									(thinktank-highlight-word :regexp (substring jump 1 -1))
+									(tt:highlight-word :regexp (substring jump 1 -1))
 									(re-search-forward (substring jump 1 -1)))
 								 
 								 ((string-match "^\*.*" jump)                ; node
-									(thinktank-highlight-word :regexp (concat "^\*+[ \t　]*" (substring jump 1)))
+									(tt:highlight-word :regexp (concat "^\*+[ \t　]*" (substring jump 1)))
 									(re-search-forward (concat "^\*+[ \t　]*" (substring jump 1 -1)))
 									(beginning-of-line))
 								 
 								 (t                                          ; 文字列
-									(thinktank-highlight-word :keyword jump)
+									(tt:highlight-word :keyword jump)
 									(or (search-forward jump nil t) (progn (goto-char (point-min)) (search-forward jump nil t)))
 									(kill-new jump))))
 					
 					(hilight
-					 (thinktank-highlight-word :keyword hilight)))
+					 (tt:highlight-word :keyword hilight)))
 
 		(ignore-errors
 			(redraw-display)
@@ -414,11 +414,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 																				; reload
-(defun thinktank3-resource-reload () (interactive)
+(defun tt:resource-reload () (interactive)
 	(thinktank3-resource-index :name :memo-initialize))
 
 																				; restruct
-(defun thinktank3-resource-restruct () (interactive)
+(defun tt:resource-restruct () (interactive)
 	(thinktank3-resource-index :name :memo-synchronize))
 
 																				; system-propertyを設定する

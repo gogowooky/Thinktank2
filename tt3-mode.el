@@ -6,7 +6,7 @@
 ;; Public
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; (thinktank3-util-open-directory) (interactive)
+;; (tt:util-open-directory) (interactive)
 ;; 
 ;; thinktank3-util-user-directories
 ;; thinktank3-util-current-memo-directory
@@ -104,7 +104,7 @@
 		(candidates . thinktank3-util-user-directories)
 		(type . thinktank-directory)))
 
-(defun thinktank3-util-open-directory () (interactive)
+(defun tt:util-open-directory () (interactive)
 	(setq tt3-util-curmemo (buffer-name))
 	(helm :sources '(thinktank3-util-current-memo-directory
 									 thinktank3-util-thinktank-directory

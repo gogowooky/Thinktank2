@@ -46,15 +46,15 @@
 '((ad-disable-advice 'browse-url 'around 'tt3-mozrepl-browse-url-with-firefox))
 
 
-(defun thinktank3-mozrepl-insert-current-page-node () (interactive)
+(defun tt:mozrepl-insert-current-page-node () (interactive)
 	(insert (format-time-string "\n* [%Y-%m-%d %a] "))
-	(thinktank3-mozrepl-insert-current-page-link))
+	(tt:mozrepl-insert-current-page-link))
 
 
 ;;
 ;; linkを挿入、選択文字あればそれにurlをattach。　ここを参照、とかやるとき便利。
 ;;
-(defun thinktank3-mozrepl-insert-current-page-link () (interactive)
+(defun tt:mozrepl-insert-current-page-link () (interactive)
 	(insert (let ((title (if (use-region-p)
 													 (prog1 (buffer-substring (region-beginning) (region-end))
 														 (kill-region (region-beginning) (region-end)))
@@ -102,17 +102,17 @@
 ;;
 ;; るりま
 ;; 
-(defun thinktank3-mozrepl-rurema-search () (interactive)
+(defun tt:mozrepl-rurema-search () (interactive)
 	(tt3-mozrepl-browse-url "http://rurema.clear-code.com/version:2.0.0/")
 	(sleep-for 0.5)
 	(tt3-mozrepl-request    (format "gBrowser.contentDocument.getElementById('query-input').value = '%s';" (focused-string)))
 	(tt3-mozrepl-request    "gBrowser.contentDocument.forms[0].submit()" ))
-;; (thinktank3-mozrepl-rurema-search)
+;; (tt:mozrepl-rurema-search)
 
 ;;
 ;; Ruby Reference
 ;;
-(defun thinktank3-mozrepl-rubyref-search () (interactive)
+(defun tt:mozrepl-rubyref-search () (interactive)
 	(tt3-mozrepl-browse-url "http://miyamae.github.io/rubydoc-ja/2.0.0/#!/doc/index.html")
 	(tt3-mozrepl-request    (format "gBrowser.contentDocument.getElementById('search-box').value = '%s';" (focused-string))))
 

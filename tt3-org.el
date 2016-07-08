@@ -21,16 +21,18 @@
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 
 ;; 日付タグ
-(defun thinktank3-org-insert-new-node () (interactive) (insert (format-time-string "\n* [%Y-%m-%d %a] ")))
-(defun thinktank3-org-insert-current-time () (interactive) (insert (format-time-string "[%Y-%m-%d %a %H:%M] ")))
+(defun tt:org-insert-new-node () (interactive)
+	(insert (format-time-string "\n* [%Y-%m-%d %a] ")))
+
+(defun tt:org-insert-current-time () (interactive) (insert (format-time-string "[%Y-%m-%d %a %H:%M] ")))
 
 ;; footnoteタグ
 (defun thinktank3-org-jump-next-footnote () (interactive))
 (defun thinktank3-org-jump-previous-footnote () (interactive)   (org-footnote-goto-previous-reference label))
 (defun thinktank3-org-jump-footnote-definition () (interactive) (org-footnote-goto-definition label))
 (defun thinktank3-org-new-footnote () (interactive)             (org-footnote-new))
-(defun thinktank3-org-open-footnote-file () (interactive) (tt3-org-open-footnote :link))
-(defun thinktank3-org-open-footnote-site () (interactive) (tt3-org-open-footnote :pubmed))
+(defun tt:org-open-footnote-file () (interactive) (tt3-org-open-footnote :link))
+(defun tt:org-open-footnote-site () (interactive) (tt3-org-open-footnote :pubmed))
 
 (defun* tt3-org-open-footnote (target)
 	(let (fntag) (save-excursion
