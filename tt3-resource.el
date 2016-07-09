@@ -9,7 +9,7 @@
 ;; Public
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; (thinktank3-resource-index &rest plist )
+;; (tt:resource-index &rest plist )
 ;;
 ;; (tt:resource-reload)           (interactive)
 ;; (tt:resource-restruct)         (interactive)
@@ -17,7 +17,7 @@
 ;; (tt:resource-destroy-memo)     (interactive)
 ;; (tt:resource-create-memo-from-region) (interactive) 
 ;; (tt:resource-create-memo)      (interactive)
-;; (thinktank3-resource-create-memo-link) (interactive)
+;; (tt:resource-create-memo-link) (interactive)
 ;; (tt:resource-update-memo)      (interactive)
 ;; (tt:resource-major-version-up) (interactive)
 ;; (tt:resource-minor-version-up) (interactive)
@@ -35,7 +35,6 @@
 ;; ruby側で必要な引値
 ;;
 
-																				; :show
 (defun* tt3-*-open-memo ( &key memoid name )
 	(cond (memoid (tt3-system-http-request :resource :memos
 																				 :action   :show
@@ -51,7 +50,6 @@
 																				; (tt3-*-open-memo :name "gtd-inbox")            ;; アクセス不可、結果不可
 
 
-																				; :create, :update
 (defun* tt3-*-save-memo ( &key memoid content verup name ) 
 	(tt3-system-http-request :resource :memos
 													 :action   :update
@@ -67,7 +65,6 @@
 																				; (tt3-*-save-memo :content "practice")
 																				; (tt3-*-save-memo :memoid "0000-00-00-000004" :content "practice")
 
-																				; :destroy
 (defun* tt3-*-destroy-memo ( &key memoid )
 	(tt3-system-http-request :resource :memos
 													 :action   :destroy
@@ -76,7 +73,7 @@
 																				; ruby側 thinktank.delete_memo!( req.id )
 																				; lisp側 examples
 
-																				; :index
+
 (defun* tt3-*-index-memo ( &key action body lookup    prop min max begin end keyword ) 
 	(setq keyword (url-hexify-string (encode-coding-string (or keyword "") 'utf-8-unix)))
 	(setq lookup (or lookup (case action
@@ -290,7 +287,7 @@
 ;;
 ;; メモを列挙する
 ;;
-(defun thinktank3-resource-index ( &rest plist ) "
+(defun tt:resource-index ( &rest plist ) "
 * [説明] thinktank serverへlookupを投げ、結果を得る。
   [引数] lookup   :  検索式                                                         (vector JSON文字列)
          name     :  system memoのExtension.Queries.(name)のnodeから他paramを得る。 (文字列) (:memo-synchronize, :memo-initialize)
@@ -302,7 +299,7 @@
          attrib   :  helm表示のためのフラグ                                         (:tag :memo(def))
   [主な使用例]
 　　　　 1) system memo #+BEGIN_SRC thinktank 〜 #+END_SRC を実行する。
-         2) 関数で実行   ex> (thinktank3-resource-index2 :name ''Misc.MemoObject'')
+         2) 関数で実行   ex> (tt:resource-index2 :name ''Misc.MemoObject'')
             menuには関数実行形式で登録してある
   [注意] current-memoを送信した場合、結果はmemoのdirectoryに格納される。 "
 
@@ -412,14 +409,18 @@
 ;; [3/3] 一次関数を用いる高次関数
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun tt:resource-check-server () (interactive)
+	(if (string= "HTTP/1.1 200 OK " (assoc-default "Status" (tt3-system-http-request :resource :memos :action :show :id "0000-00-00-000000")))
+			(progn (message "webrick server is already starting") t)
+		(progn (message "no thinktank webrick server exists") nil)))
 
 																				; reload
 (defun tt:resource-reload () (interactive)
-	(thinktank3-resource-index :name :memo-initialize))
+	(tt:resource-index :name :memo-initialize))
 
 																				; restruct
 (defun tt:resource-restruct () (interactive)
-	(thinktank3-resource-index :name :memo-synchronize))
+	(tt:resource-index :name :memo-synchronize))
 
 																				; system-propertyを設定する
 																				;(defun thinktank3-resource-update-system-property ( key value )
@@ -478,7 +479,7 @@
 		))
 
 ;; 新規メモを作成・保存 (new.howm)
-(defun thinktank3-resource-create-memo-link () (interactive)
+(defun tt:resource-create-memo-link () (interactive)
 	(let ((created (thinktank3-format :memofile :now)))
 		(narrow-to-region (progn (end-of-line) (point)) (progn (beginning-of-line) (point)))
 		(when (re-search-forward "new\.howm") (replace-match created))
@@ -552,7 +553,7 @@
 	'((action ("O|Open Memos"    . (lambda (x) (loop for item in (helm-marked-candidates)
 																									 for ( memoid . jump ) = (thinktank3-format :memolink item)
 																									 do  (tt3-resource-show-memo :memoid memoid :jump jump))))
-						("M|Squeeze More"  . (lambda (x) (thinktank3-resource-index :name "Search" :senddata (mapconcat 'identity (helm-marked-candidates) "\n"))))
+						("M|Squeeze More"  . (lambda (x) (tt:resource-index :name "Search" :senddata (mapconcat 'identity (helm-marked-candidates) "\n"))))
 						("L|insert Lines"  . (lambda (x) (mapc (lambda (item) (insert (thinktank3-format :memofile item) "\n")) (helm-marked-candidates))))
 						("I|Insert Ids"    . (lambda (x) (mapc (lambda (item) (insert (thinktank3-format :memofile item) "\n")) (helm-marked-candidates))))
 						("D|Delete Memos"  . (lambda (x) (mapc (lambda (item) (tt3-resource-destroy-memo :memoid (thinktank3-format :memoid item))) (helm-marked-candidates))))
@@ -587,7 +588,7 @@
 																													(cons (format (concat fmt "(%s)") key val) (format fmt key)))))))
 		(action ("L|insert"     . (lambda (x) (mapc (lambda (item) (insert item)) (helm-marked-candidates))))
 						("F|find memos" . (lambda (x) (let* ((keyword (car (helm-marked-candidates))))
-																						(helm :sources thinktank3-resource-index-search-result :buffer "*search-keyword*")))))
+																						(helm :sources tt:resource-index-search-result :buffer "*search-keyword*")))))
 		(candidate-number-limit . 1000 )))
 
 

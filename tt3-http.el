@@ -97,7 +97,6 @@
 																	response)
 															(error "error" '(("Status" . "error"))))))))
 
-(require 'tt3-webrick)
 
 
 (provide 'tt3-http)

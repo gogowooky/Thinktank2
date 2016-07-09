@@ -5,8 +5,8 @@
 ;; 追加メニュー表示コマンド
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
-(defun thinktank3-resource-show-web-url-list ( &optional arg )   (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-weburl :list)))
-(defun thinktank3-resource-show-web-url-tree ( &optional arg )   (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-weburl :tree)))
+(defun tt:resource-show-web-url-list ( &optional arg )   (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-weburl :list)))
+(defun tt:resource-show-web-url-tree ( &optional arg )   (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-weburl :tree)))
 (defun thinktank3-resource-show-help-menu-list ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-keymap-menu menu-bar-help-menu :list)))
 (defun thinktank3-resource-show-help-menu-tree ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-keymap-menu menu-bar-help-menu :tree)))
 
@@ -24,7 +24,7 @@
          arg        : C-u 状態を得る "
 
 	(case menu-type
-		(:list (let* ((source (thinktank3-resource-index :name "Extension.Queries.Misc.WebUrlList" :output :list)))
+		(:list (let* ((source (tt:resource-index :name "Extension.Queries.Misc.WebUrlList" :output :list)))
 						 (helm :sources `((name . "url")
 															(candidates . ,source)
 															(candidate-number-limit . 1000 )
@@ -46,8 +46,8 @@
 																			("M|Msgbox"    . (lambda (x) (loop for item in (helm-marked-candidates) do (message "%S" item))))))
 									 :buffer "*web-url*")))
 		
-		(:tree  (tt3-menu-show-stringlist-menu (thinktank3-resource-index :name "Extension.Queries.Misc.WebUrlTree" :output :lisp) :tree))
-		(:popup (tt3-menu-show-stringlist-menu (thinktank3-resource-index :name "Extension.Queries.Misc.WebUrlTree" :output :lisp) :popup))))
+		(:tree  (tt3-menu-show-stringlist-menu (tt:resource-index :name "Extension.Queries.Misc.WebUrlTree" :output :lisp) :tree))
+		(:popup (tt3-menu-show-stringlist-menu (tt:resource-index :name "Extension.Queries.Misc.WebUrlTree" :output :lisp) :popup))))
 
 ;; (tt3-menu-show-weburl :list)
 

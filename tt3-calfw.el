@@ -40,7 +40,7 @@
                      (candidates . ,calendars)
                      (action ( "S|Show" . (lambda (x)
 																						(loop for calendar in (helm-marked-candidates) 
-																									do (thinktank3-resource-index :name calendar :cache :no :output :no))
+																									do (tt:resource-index :name calendar :cache :no :output :no))
 																						(cfw:refresh-calendar-buffer nil)
 																						'(thinktank3-calfw-open-calendar :callist cal-set))))))))
 
@@ -95,7 +95,7 @@
 
 (defun tt3-calfw-day-detail () (interactive) ;; calendar日関連のobjectをすべて表示する
 	(let ((date (format-time-string "%Y-%m-%d" (cfw:calendar-to-emacs (cfw:cursor-to-nearest-date)))))
-		(thinktank3-resource-index :name "Extension.Queries.Memo.DayItem" :input date)))
+		(tt:resource-index :name "Extension.Queries.Memo.DayItem" :input date)))
 
 (defadvice org-follow-timestamp-link (around tt3-calfw-timestamp-link activate) ;; timestamp clickでcalendarを開く
 	(when (org-at-timestamp-p t)
@@ -108,7 +108,7 @@
 
 
 
-;; (insert (format "%S" (thinktank3-resource-index :name "Calfw.Event.ComingPeriod" :output :lisp)))
+;; (insert (format "%S" (tt:resource-index :name "Calfw.Event.ComingPeriod" :output :lisp)))
 ;;==============================================================================================================================================
 ;; Private
 ;;==============================================================================================================================================
@@ -124,7 +124,7 @@
 														 (let (schedule periods)
 															 
 															 ;; 始点のみのイベント
-															 (loop for (eventtime . plist) in (thinktank3-resource-index :name ,property-name :output :lisp)
+															 (loop for (eventtime . plist) in (tt:resource-index :name ,property-name :output :lisp)
 																		 for memoid = (getf plist :memoid)
 																		 for jump = (getf plist :jump)
 																		 for caption = (propertize (getf plist :caption) 'memoid memoid 'jump jump 'mouse-face 'highlight)
@@ -135,7 +135,7 @@
 
 															 ;; 期間のあるイベント
 															 (when ,append
-																	(loop for (eventtime . plist) in (thinktank3-resource-index :name ,(concat property-name "." append) :output :lisp)
+																	(loop for (eventtime . plist) in (tt:resource-index :name ,(concat property-name "." append) :output :lisp)
 																				for memoid = (getf plist :memoid)
 																				for jump = (getf plist :jump)
 																				for caption = (propertize (getf plist :caption) 'memoid memoid 'jump jump 'mouse-face 'highlight)

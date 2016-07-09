@@ -22,11 +22,11 @@
 ;; minor-mode
 (setq thinktank-minor-mode-map
 	(let ((map (make-sparse-keymap)))
-		(define-key map (kbd "C-/") 'thinktank3-menu-show-tree-menu)
-		(define-key map (kbd "C-?") 'thinktank3-menu-show-list-menu)
+		(define-key map (kbd "C-/") 'tt:menu-show-tree-menu)
+		(define-key map (kbd "C-?") 'tt:menu-show-list-menu)
 		(define-key map (kbd "C-q") '(lambda nil (interactive) (kill-buffer)))
-		(define-key map (kbd "C-M-/") 'thinktank3-resource-show-web-url-list)
-		(define-key map (kbd "M-/")   'thinktank3-resource-show-web-url-tree)
+		(define-key map (kbd "C-M-/") 'tt:resource-show-web-url-list)
+		(define-key map (kbd "M-/")   'tt:resource-show-web-url-tree)
 		(define-key map (kbd "M-P")   'org-backward-heading-same-level)
 		(define-key map (kbd "M-N")   'org-forward-heading-same-level)
 
@@ -64,7 +64,7 @@
 
 	;; new.howm
 	(button-lock-set-button "new\\.howm"
-													'(lambda () (interactive) (thinktank3-resource-create-memo-link))
+													'(lambda () (interactive) (tt:resource-create-memo-link))
 													:keyboard-binding "RET"
 													:face 'thinktank-button-lock-face))
 

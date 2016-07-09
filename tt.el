@@ -10,13 +10,17 @@
 (require 'tt-util)             ;; elisp, emacs
 (require 'tt3-system)          ;; thinktank-resource
 (require 'tt3-resource)        ;; thinktank-resource
-(thinktank3-webrick)                                        ;; QSyncのためか、ディレクトリ内に同名のファイルが存在することが発生する。
+
+(require 'tt3-webrick)
+(tt:start-webrick)                                        ;; QSyncのためか、ディレクトリ内に同名のファイルが存在することが発生する。
 
 (require 'tt3-calfw)           ;; emacs, thinktank-resource
 (require 'tt3-oauth2)          ;; emacs, thinktank-resource
 (require 'tt3-dnd)             ;; emacs, thinktank-system
 (require 'tt3-org)             ;; emacs, thinktank-system
 (require 'tt3-mozrepl)         ;; emacs, thinktank-system
+
+(require 'tt3-misc)            ;; elisp, emacs
 (require 'tt3-menu)            ;; thinktank-system
 (require 'tt3-mode)            ;; thinktank-system
 
@@ -51,9 +55,9 @@
 ;; menu setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (thinktank3-menu-clear)
-(thinktank3-menu-add '(( "M|Memo C|Clipboard I|Id" :context "ext:howm" :func (push-string-to-clipboard (thinktank3-format :memofile (buffer-name))) :help "メモのIDをコピーする")
-											 ( "M|Memo C|Clipboard T|Title" :context "ext:howm" :func (save-excursion (goto-char (point-min)) (push-string-to-clipboard (current-line-string))) :help "メモのtitleをコピーする")
-											 ( "M|Memo C|Clipboard F|Filepath" :context "ext:howm"	:func (push-string-to-clipboard (thinktank3-format :memopath (buffer-name))) :help "メモのfilepathをコピーする")
+(thinktank3-menu-add '(( "M|Memo C|Clipboard I|Id" :context "ext:howm" :func tt:misc-copy-memoid :help "メモのIDをコピーする")
+											 ( "M|Memo C|Clipboard T|Title" :context "ext:howm" :func tt:misc-copy-memotitle :help "メモのtitleをコピーする")
+											 ( "M|Memo C|Clipboard F|Filepath" :context "ext:howm"	:func tt:misc-copy-memopath :help "メモのfilepathをコピーする")
 											 ( "M|Memo D|Delete" :context "ext:howm" :command tt:resource-destroy-memo :help "メモを削除")
 											 ( "M|Memo V|Version M|Minor-up" :context "ext:howm" :command tt:resource-minor-version-up :help "メモをマイナーバージョンアップ" )
 											 ( "M|Memo V|Version J|Major-up" :context "ext:howm" :command tt:resource-major-version-up :help "メモをメジャーバージョンアップ" )
@@ -64,13 +68,11 @@
 											 ( "M|Memo S|Save" :command tt:resource-update-memo :help "メモを保存" )
 											 ( "M|Memo X|Close" :command kill-buffer :help "メモを閉じる")
 											 ( "M|Memo R|Save-Region" :command tt:resource-create-memo-from-region :help "選択領域を新規memoとして保存する")
-											 
-											 ( "C|Calendar C|Show" :command tt:calfw-show :help "カレンダーを開く")
-											 ( "C|Calendar G|SelectGroup" :command tt:calfw-show-group :help "カレンダーグループを開く")
-											 ( "C|Calendar O|ShowOne" :command tt:calfw-show-one :help "カレンダーを一種類のみ開く")
-											 ( "C|Calendar U|Update" :command tt:calfw-update :help "カレンダーグループを選択して更新する")
-											 ( "C|Calendar S|SetCurrent" :command tt:calfw-select :help "表示カレンダーを選択する")
-											 
+											 ( "@|misc C|Calendar C|Show" :command tt:calfw-show :help "カレンダーを開く")
+											 ( "@|misc C|Calendar G|SelectGroup" :command tt:calfw-show-group :help "カレンダーグループを開く")
+											 ( "@|misc C|Calendar O|ShowOne" :command tt:calfw-show-one :help "カレンダーを一種類のみ開く")
+											 ( "@|misc C|Calendar U|Update" :command tt:calfw-update :help "カレンダーグループを選択して更新する")
+											 ( "@|misc C|Calendar S|SetCurrent" :command tt:calfw-select :help "表示カレンダーを選択する")
 											 ( "U|Usability F|Footnote O|Open-file" :command tt:org-open-footnote-file :help "footnote末尾のファイルを開く" )
 											 ( "U|Usability F|Footnote P|Open-pubmed" :command tt:org-open-footnote-site :help "fornoteの引用論文をpubmedで検索" )
 											 ( "U|Usability E|Emacs H|Helm-imenu" :command helm-imenu :help "helmでimenu")
@@ -78,21 +80,19 @@
 											 ( "U|Usability E|Emacs I|Isearch-occur" :command isearch-occur :help "検索")
 											 ( "U|Usability E|Emacs R|Regexp-Builder" :command regexp-builder :help "Regexp Builder")
 											 ( "U|Usability U|View A|Set-Alpha" :command tt:set-alpha :help "透過度を設定する")
-											 ( "U|Usability U|View T|Toggle-Toolbar" :command tt:toggle-toolbar :help "toolbar表示をトグル" )
+											 ( "U|Usability U|View T|Toggle-Toolbar" :command tt:misc-toggle-toolbar :help "toolbar表示をトグル" )
 											 ( "U|Usability U|View M|Toggle-Menubar" :command tt:toggle-menubar :help "menubar表示をトグル" )
-											 ( "U|Usability U|View S|Toggle-Scrollbar" :command tt:toggle-scrollbar :help "scrollbarをトグル" )
+											 ( "U|Usability U|View S|Toggle-Scrollbar" :command tt:misc-toggle-scrollbar :help "scrollbarをトグル" )
 											 ( "U|Usability U|View F|Toggle-Fullscreen" :command tt:toggle-full :help "fullscreenをトグル" )
 											 ( "U|Usability U|View X|Toggle-Maximize" :command tt:toggle-expand :help "最大化をトグル" )
 											 ( "U|Usability U|View B|Text-Bending" :command tt:truncate-lines :help "折り畳みをトグル" )
 											 ( "U|Usability U|View I|Indent" :command tt:indent-all :help "インデントをそろえる" )
 											 ( "U|Usability U|View H|Word-Hilight-on" :command tt:highlight-word :help "ハイライトする" )
 											 ( "U|Usability U|View O|Word-Hilight-off" :command tt:unhilight :help "ハイライトを止める")	
-											 
 											 ( "I|Insert N|Node D|Date" :command tt:org-insert-new-node :help "新しいtimestamp付きの節を挿入")
 											 ( "I|Insert N|Node F|Firefox" :command tt:mozrepl-insert-current-page-node :help "firefoxのcurrent pageへのlinkを挿入" )
 											 ( "I|Insert D|Date" :command tt:org-insert-current-time :help "timestampを挿入")
 											 ( "I|Insert F|Firefox" :command tt:mozrepl-insert-current-page-link :help "firefoxのcurrent pageへのlinkを挿入" )
-											 
 											 ( "S|System W|Restart-webrick" :command tt:system-run-webrick :help "local webrick serverを起動する" )
 											 ( "S|System D|Directory" :command tt:util-open-directory :help "ディレクトリを開く" )
 											 ( "S|System L|Reload-memo" :command tt:resource-reload :help "メモをリロードする" )
@@ -101,13 +101,10 @@
 											 ( "S|System O|Object" :command tt:resource-show-property-object :help "objectの数を数える" )
 											 ( "S|System A|AutoSelect" :command tt:menu-select-one-automatically :help "helmで１つに絞り込んだら自動選択")
 											 ( "S|System M|Menu-Initialize" :command tt:menu-initialize :help "menuを更新する" )
-											 
 											 ( "W|Web R|Ruby M|Rurima" :command tt:mozrepl-rurema-search :help "るりまさーち")
 											 ( "W|Web R|Ruby R|RubyRef" :command tt:mozrepl-rubyref-search :help "Rubyリファレンス" )
-											 
-											 ( "O|OtherMenu L|UrlList" :func (tt3-menu-show-weburl :list) :help "URLリスト" )
-											 ( "O|OtherMenu T|UrlList" :func (tt3-menu-show-weburl :tree) :help "URLリスト" )
-											 
+											 ( "O|OtherMenu L|UrlList" :command tt:resource-show-web-url-list :help "URLリスト" )
+											 ( "O|OtherMenu T|UrlTree" :comman tt:resource-show-web-url-tree :help "URLリスト" )
 											 ( "h|Help S|Search W|word" :command tt:search-forward-focused-string :help "キーワードジャンプ")
 											 ( "h|Help S|Search L|Elisp" :helm helm-source-info-elisp :help "elisp検索")
 											 ( "h|Help S|Search E|Emacs" :helm helm-source-info-emacs :help "emacs検索")
@@ -153,8 +150,8 @@
 															 (let* ((menu (org-entry-get nil "menu"))
 																			(help (org-entry-get nil "help")))
 																 (when menu (thinktank3-menu-add `(,menu
-																																	 :func    (thinktank3-resource-index :name ,title)
-																																	 ;; :func    (thinktank3-resource-index :name ,menu)
+																																	 :func    (tt:resource-index :name ,title)
+																																	 ;; :func    (tt:resource-index :name ,menu)
 																																	 :help    ,help
 																																	 :context ,(org-entry-get nil "context")))))))
 (add-hook 'thinktank3-menu-after-initialize-hook 'tt-hook-query-to-menu)
@@ -171,7 +168,7 @@
 
 (defun tt-hook-oneline-to-menu ()	;; 一行メモの関数定義＆登録
 	;; エラーでる。
-	'(loop for ( memoid name comm supl menu ) in (thinktank3-resource-index :name "Menu.Query.AssociateFile.oneline" :output :lisp)
+	'(loop for ( memoid name comm supl menu ) in (tt:resource-index :name "Menu.Query.AssociateFile.oneline" :output :lisp)
 				 unless (equal menu "")
 				 do (thinktank3-menu-add `(,menu :func (tt3-resource-append-oneline :memoid ,memoid :name ,name) :help ,(concat "一行メモ:" name)))))
 (add-hook 'thinktank3-menu-after-initialize-hook 'tt-hook-oneline-to-menu)

@@ -1,4 +1,6 @@
-;; tt-system.l; -*- mode: emacs-lisp; coding: utf-8 -*-
+;; tt-webrick.l; -*- mode: emacs-lisp; coding: utf-8 -*-
+
+(defun tt:start-webrick () (tt3-system-open-webrick "version2.1"))
 
 (defun tt3-system-open-webrick ( &optional option ) (interactive) "
 * [説明] webrickを起動する。
@@ -7,9 +9,8 @@
 		(setq default-directory (file-name-directory (locate-library "tt.el")))  '((locate-file))
 
 		;; 起動中local serverがあれば立ち上げない。
-		(if (string= "HTTP/1.1 200 OK " (assoc-default "Status" (tt3-system-http-request :resource :memos :action :show :id "0000-00-00-000000")))
-				(message "webrick process had been working already")
-			
+		(unless (tt:resource-check-server)
+		
 			;; shell窓でrubyを立ち上げる
 			(case (window-system)
 				('w32 (defun set-shell-cmdproxy()
@@ -39,7 +40,6 @@
 				
 				('x (start-process-shell-command "xfce" nil (format "xfce4-terminal --working-directory='%s' -H --command='ruby thinktank.rb %s'" default-directory option)))))))
 
-(defun thinktank3-webrick () (tt3-system-open-webrick "version2.1"))
 
 
 (provide 'tt3-webrick)

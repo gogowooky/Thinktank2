@@ -11,9 +11,9 @@
 ;; (thinktank3-menu-clear)
 ;; (thinktank3-menu-add items) 
 ;;
-;; (thinktank3-menu-show-tree-menu  &optional arg ) (interactive "P")
-;; (thinktank3-menu-show-list-menu  &optional arg ) (interactive "P")
-;; (thinktank3-menu-show-popup-menu &optional arg ) (interactive "P")
+;; (tt:menu-show-tree-menu  &optional arg ) (interactive "P")
+;; (tt:menu-show-list-menu  &optional arg ) (interactive "P")
+;; (tt:menu-show-popup-menu &optional arg ) (interactive "P")
 ;; (tt:menu-initialize () (interactive)
 ;; (tt:menu-select-one-automatically) (interactive)
 ;; 
@@ -34,9 +34,9 @@
 ;; [1/6] 各種メニュー表示コマンド
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
-(defun thinktank3-menu-show-tree-menu ( &optional arg )  (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :tree)))
-(defun thinktank3-menu-show-list-menu ( &optional arg )  (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :list)))
-(defun thinktank3-menu-show-popup-menu ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :popup)))
+(defun tt:menu-show-tree-menu ( &optional arg )  (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :tree)))
+(defun tt:menu-show-list-menu ( &optional arg )  (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :list)))
+(defun tt:menu-show-popup-menu ( &optional arg ) (interactive "P") (with-tt3-menu-context arg (tt3-menu-show-stringlist-menu tt3-menu-string-list :popup))) '((tt:menu-show-popup-menu))
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
@@ -44,10 +44,7 @@
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 (defvar tt3-menu-default-string-list 
-	'(( "M|Menu C|Clipboard I|Id" :context "ext:howm" :func (push-string-to-clipboard (thinktank3-format :memofile (buffer-name))) :help "メモのIDをコピーする")
-		( "M|Menu L|UrlList" :func (tt3-menu-show-weburl :list) :help "URLリスト" )
-		( "M|Menu T|UrlList" :func (tt3-menu-show-weburl :tree) :help "URLリスト" )
-		( "T|Test 1|Test1" :func (msgbox "%s" (format-time-string "%Y-%m-%d %H:%M")) :help "テスト1")
+	'(( "T|Test 1|Test1" :func (msgbox "%s" (format-time-string "%Y-%m-%d %H:%M")) :help "テスト1")
 		( "T|Test 2|Test2" :func (msgbox "%s" input) :input :key :help "テスト2")
 		( "H|Help D|Document H|Help" :command help :help "ヘルプ")
 		( "H|Help E|Emacs" :info emacs :help "emacsのマニュアル")
@@ -63,7 +60,7 @@
 	 (thinktank3-menu-add [メニュー] )                              ; メニューを設定する
 	 (add-hook 'thinktank3-menu-before-initialize-hook [初期化] )   ; 追加の初期化指定(optional)
 	 (tt:menu-initialize)                                   ; 初期化
-	 (define-key map (kbd ”C-/”) 'thinktank3-menu-show-tree-menu)   ; 呼び出し"
+	 (define-key map (kbd ”C-/”) 'tt:menu-show-tree-menu)   ; 呼び出し"
 
 	(run-hooks 'thinktank3-menu-before-initialize-hook)
 
@@ -238,7 +235,7 @@
 																					 `(,(intern (car tree)) menu-item ,(car tree) 
 																						 (keymap ,(car tree) ,@(loop for branch in (cadr tree) collect (tree-to-keymapmenu branch)))))))
 								(let ((tree (tt3-menu-stringlist-to-tree string-list)))
-									(popup-menu (cadddr (tree-to-keymapmenu (list "TT" tree))))))))))
+									(popup-menu (cadddr (tree-to-keymapmenu (list "ESC to cancel" tree))))))))))
 
 
 
