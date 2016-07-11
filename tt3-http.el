@@ -34,15 +34,15 @@
 					;;
 					;; resource, action, id, query から url-request-method, url を得る
 					;;
-					;; (setq tmpurl (concat (thinktank3-config resource) (if id (concat "/" id) "")))  ;; (thinktank3-config :memos) ;; "http://127.0.0.1:20080/thinktank/memo" "/" "0000-00-00-00000"
 					(setq tmpurl (concat (thinktank3-config :baseurl)
 															 (symbol-to-string resource)
 															 (if id (concat "/" id) "")))
-
+					
 					;; for test
 					(setq tmpurl (replace-regexp-in-string "20080" "20090" tmpurl))
-
-					(setq params (join-string (loop for ( key . val ) in query                      ;; lookup=....&optional=....
+					
+					;; lookup=....&optional=....
+					(setq params (join-string (loop for ( key . val ) in query
 																					collect (format "%s=%s"
 																													(url-hexify-string (cond ((symbolp key) (symbol-to-string key))
 																																									 (t key)))
@@ -52,14 +52,8 @@
 																																									 ((symbolp val) (symbol-name val))
 																																									 (t val))))
 																					) "&" ))
-					
 					;;
-					;; url
-					;; url-request-method
-					;; url-request-data
-					;; url-request-extra-headers
-					;;
-					;; 以上を設定して、(url-retrieve-synchronously url) を実行するとbufferにresponseが返る。
+					;; url, url-request-method, url-request-data, url-request-extra-headers を設定して、(url-retrieve-synchronously url) を実行するとbufferにresponseが返る。 (url.el)
 					;;
 					(destructuring-bind ( url-request-method . url )
 							(case action

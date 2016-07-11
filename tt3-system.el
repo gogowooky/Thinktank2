@@ -128,7 +128,6 @@
 
 
 
-(require 'tt3-http)
 
 
 (provide 'tt3-system)
