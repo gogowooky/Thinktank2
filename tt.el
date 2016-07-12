@@ -9,6 +9,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'tt-util)             ;; elisp, emacs
 (require 'tt3-system)          ;; thinktank-resource
+(require 'tt3-system-extended) ;; thinktank-resource
 (require 'tt3-resource)        ;; thinktank-resource
 
 (require 'tt3-webrick)
