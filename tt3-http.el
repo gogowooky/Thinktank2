@@ -6,8 +6,6 @@
 ;; webrick access
 ;;
 
-(defvar tt3-http-response-buffer "*http-res*")
-
 (defun* tt3-system-http-request ( &key resource action id query body ) "
 * [説明] webrick serverにアクセスする。
   [引数] resource :  :memos
@@ -29,8 +27,9 @@
 	;;  (\"Content-Length\" . \"5749\")
 	;;  (\"Connection\" . \"Keep-Alive\"))
 	;; "
-				
-				(let* (url-request-data url-request-extra-headers tmpurl params)
+
+				(let* ((tt3-http-response-buffer "*http-res*")
+							 url-request-data url-request-extra-headers tmpurl params )
 					;;
 					;; resource, action, id, query から url-request-method, url を得る
 					;;

@@ -9,7 +9,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'tt-util)             ;; elisp, emacs
 (require 'tt3-system)          ;; thinktank-resource
-(require 'tt3-system-extended) ;; thinktank-resource
 (require 'tt3-resource)        ;; thinktank-resource
 
 (require 'tt3-webrick)
@@ -24,6 +23,7 @@
 (require 'tt3-misc)            ;; elisp, emacs
 (require 'tt3-menu)            ;; thinktank-system
 (require 'tt3-mode)            ;; thinktank-system
+(require 'tt3-config)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 開発上のルール
@@ -127,7 +127,6 @@
 											 ( "h|Help C|Context" :func (msgbox "context:%S" tt3-menu-context) :help "contextを表示")
 											 ))
 
-(require 'tt3-config)
 
 (defun tt-hook-search-engine-to-menu ()	;; web search engine の登録
 	(mapcar-tt3-property-subnode "Menu.WebSearch"
@@ -195,7 +194,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (add-hook 'find-file-hook (lambda () (when (string-match "log$" (buffer-name)) (auto-revert-tail-mode t))))
 (add-hook 'after-revert-hook (lambda () (when auto-revert-tail-mode (end-of-buffer))))
-
 
 
 (provide 'tt)

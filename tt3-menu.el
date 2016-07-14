@@ -20,7 +20,6 @@
 ;; thinktank3-menu-before-initialize-hook
 ;; thinktank3-menu-after-initialize-hook
 ;;
-;;
 
 
 ;; [1/6] 各種メニュー表示コマンド
@@ -236,7 +235,6 @@
 																						 (keymap ,(car tree) ,@(loop for branch in (cadr tree) collect (tree-to-keymapmenu branch)))))))
 								(let ((tree (tt3-menu-stringlist-to-tree string-list)))
 									(popup-menu (cadddr (tree-to-keymapmenu (list "ESC to cancel" tree))))))))))
-
 
 
 
