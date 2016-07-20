@@ -16,16 +16,14 @@
 ;; thinktank3-property:  システムメモ(0000-00-00-00000?.howm)に記載したシステムプロパティを読み出す。
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
-(defvar tt3-property-buffer-name "*prop-buf3*") ;; このバッファー上に全system memoが読み込まれる。
-(defvar tt3-property nil)                       ;; 上バッファーをnode単位に分解、( "title" pos "howm filename" ) のlistとして全nodeを保持する。
+
 
 (defun thinktank3-property ( &optional node-address key value ) "
 * [説明] node-addressで指定されるkeyの値を取得またはvalueに書き換える。
   [例]  (thinktank3-property \"Thinktank.Host.thinktank\" \"url\" )
 "
-	(cond ((equal node-address :reset)  (tt3-property-initialize))                                                    ;; 次回更新
-				((equal node-address :buffer) (or (get-buffer tt3-property-buffer-name)
-																					(progn (tt3-property-initialize) (get-buffer tt3-property-buffer-name)))) ;; buffer取得
+	(cond ((equal node-address :reset)  (tt3-property :initialize))                            ;; 次回更新
+				((equal node-address :buffer) (tt3-property :buffer))                                ;; buffer取得
 				((stringp node-address)       ;; (thinktank3-property "Thinktank.Host.thinktank" "url")
 				 (cond ((equal key :keyword) 	 (last-tt3-property-node node-address  (tt3-tt3-property-get-element :keyword value)))             ;; keywordのvalueを返す ( #+KEY: VALUE の形式 )
 							 ((equal key :src-block) (last-tt3-property-node node-address  (tt3-tt3-property-get-element :src-block)))                 ;; src-blockのvalueを返す ( #+begin_src のみ )
@@ -42,45 +40,55 @@
 																								 ((stringp value)         (tt3-property-put-property node-address key value))
 																								 (t                       prop)))))
 							 (t nil)))
-				(t tt3-property)                                                                                          ;; 全propertyを返す
+				(t (tt3-property :values))                                                                                          ;; 全propertyを返す
 				))
 
 
-(defun  tt3-property-initialize () "
-* [説明] system memoから全propertyを読み込む。
+(defvar tt3-property-list nil)                       ;; 上バッファーをnode単位に分解、( "title" pos "howm filename" ) のlistとして全nodeを保持する。
+
+(defun* tt3-property ( &optional action ) "
+* [説明] system memoをloadし、全propertyを読み込む。
          propertyは ( node-address  node-position  origin-file ) の list として保存されている。
          property値自体は buffer の node-position の nodeで読み取る
 "
-	(ignore-errors (kill-buffer tt3-property-buffer-name))                               
-	;; 全system file読み込む --------------------------------------------------------------------------------------------------------------------
-	(save-excursion
-		(set-buffer (generate-new-buffer tt3-property-buffer-name))
-		(loop for dir in (sort (directory-files tt3-memodir) 'string<)
-					for fil = (condition-case nil (concat tt3-memodir dir "/" (substring dir -17) ".howm") (error "_"))
-					if (file-exists-p fil)
-					do (progn (insert (format "\n* ======== %s.howm ========\n" (substring dir -17)))
-										(insert-file-contents fil)
-										(goto-char (point-max))))
-		
-		(org-mode) (show-all) (beginning-of-buffer)	(outline-next-heading) (sleep-for 0.1) ;; org処理の準備
-		
-		;; リスト作成 ( node-address  node-position  origin-file ) --------------------------------------------------------------------------------
-		(flet ((get-node-heading-and-pos (lvl ttl orig) 
-																		 (loop for ( elemtype elemplist ) = (org-element-at-point) ;; (:headline (plist))
-																					 for elemlvl = (or (getf elemplist :level) 0)        ;; :headlineはplistに:levelを持つ
-																					 with pos = 0
-																					 while (and (<= lvl elemlvl) pos)
-																					 append (let* ((nodettl (replace-regexp-in-string (concat "@" (upcase (system-name)) "$") "" (getf elemplist :title))) ; 自環境nodeは@MACHINEを取る
-																												 (elempos (getf elemplist :begin))
-																												 (elemttl (concat ttl "." nodettl)))
-																										'(msgbox "[%s][%s][%s][%s:%s][ori:%s]" nodettl elempos elemttl elemlvl lvl orig)
-																										(setq pos (outline-next-heading))
-																										(when (string-match "\\([0-9\-]\\{17\\}\\.howm\\)" nodettl) (setq orig (match-string 1 nodettl)))
-																										(when (= lvl elemlvl) (cons (list (substring elemttl 1) elempos orig)
-																																								(get-node-heading-and-pos (+ 1 lvl) elemttl orig)))))))
-			;; 最後のｱｲﾃﾑで抜け出せなくなる
-			(setq tt3-property (get-node-heading-and-pos 1 "" "")))))   ;;  (insert (format "%S" (tt3-property-initialize t)))
+	(let ((tt3-property-buffer-name "*prop-buf3*"))  ;; このバッファー上に全system memoが読み込まれる。
 
+		(case action
+			(:values tt3-property-list)
+			(:buffer (or (get-buffer tt3-property-buffer-name)
+									 (progn (tt3-property :initialize) (get-buffer tt3-property-buffer-name))))
+
+			(:initialize (ignore-errors (kill-buffer tt3-property-buffer-name))                               
+									 ;; 全system file読み込む --------------------------------------------------------------------------------------------------------------------
+									 (save-excursion
+										 (set-buffer (generate-new-buffer tt3-property-buffer-name))
+										 (loop for dir in (sort (directory-files tt3-memodir) 'string<)
+													 for fil = (condition-case nil (concat tt3-memodir dir "/" (substring dir -17) ".howm") (error "_"))
+													 if (file-exists-p fil)
+													 do (progn (insert (format "\n* ======== %s.howm ========\n" (substring dir -17)))
+																		 (insert-file-contents fil)
+																		 (goto-char (point-max))))
+										 
+										 (org-mode) (show-all) (beginning-of-buffer)	(outline-next-heading) (sleep-for 0.1) ;; org処理の準備
+										 
+										 ;; リスト作成 ( node-address  node-position  origin-file ) --------------------------------------------------------------------------------
+										 (flet ((get-node-heading-and-pos (lvl ttl orig) 
+																											(loop for ( elemtype elemplist ) = (org-element-at-point) ;; (:headline (plist))
+																														for elemlvl = (or (getf elemplist :level) 0)        ;; :headlineはplistに:levelを持つ
+																														with pos = 0
+																														while (and (<= lvl elemlvl) pos)
+																														append (let* ((nodettl (replace-regexp-in-string (concat "@" (upcase (system-name)) "$") "" (getf elemplist :title))) ; 自環境nodeは@MACHINEを取る
+																																					(elempos (getf elemplist :begin))
+																																					(elemttl (concat ttl "." nodettl)))
+																																		 '(msgbox "[%s][%s][%s][%s:%s][ori:%s]" nodettl elempos elemttl elemlvl lvl orig)
+																																		 (setq pos (outline-next-heading))
+																																		 (when (string-match "\\([0-9\-]\\{17\\}\\.howm\\)" nodettl) (setq orig (match-string 1 nodettl)))
+																																		 (when (= lvl elemlvl) (cons (list (substring elemttl 1) elempos orig)
+																																																 (get-node-heading-and-pos (+ 1 lvl) elemttl orig)))))))
+											 ;; 最後のｱｲﾃﾑで抜け出せなくなる
+											 (setq tt3-property-list (get-node-heading-and-pos 1 "" "")))))
+			)))
+		
 
 
 
@@ -91,7 +99,7 @@
          title:            node addr   ex)Extension.Queries.Memo.All
          parent-node-addr: 親のアドレス "
 	`(with-current-buffer (thinktank3-property :buffer)
-		 (loop for ( title pos orig-filename ) in tt3-property
+		 (loop for ( title pos orig-filename ) in tt3-property-list
 					 with regexp = ,(concat "^" (regexp-quote parent-node-addr) "\\.[a-zA-Z0-9_\\.\\-]+$")
 					 if (string-match regexp title)
 					 collect (unwind-protect (save-excursion (save-restriction (goto-char pos) (beginning-of-line) (org-narrow-to-subtree) ,@body)) (widen)))))
@@ -106,7 +114,7 @@
 * [説明] node-addr指定に該当する複数nodeをnarrowingして巡回し、bodyで評価した値をlistで返すマクロ"
 	
 	`(with-current-buffer (thinktank3-property :buffer)
-		 (loop for ( title pos orig-filename ) in tt3-property
+		 (loop for ( title pos orig-filename ) in tt3-property-list
 					 with node-addr = ,node-addr
 					 if (equal title node-addr)
 					 collect (unwind-protect (save-excursion (save-restriction (goto-char pos) (beginning-of-line) (org-narrow-to-subtree) ,@body)) (widen)))))
@@ -117,7 +125,7 @@
 * [説明] node-addrで指定されるnodeをnarrowingし、body評価が非nilの場合、( original-filename . pos )を返す "
 	(when (and (tt3-tt3-property-get-element elemtype key) orig-filename pos) 
 		(cons orig-filename (- pos 
-													 (car (assoc-default (format "======== %s ========" orig-filename) tt3-property))
+													 (car (assoc-default (format "======== %s ========" orig-filename) tt3-property-list))
 													 42))))
 
 (defun tt3-tt3-property-get-element ( elemtype &optional key ) "
@@ -187,7 +195,7 @@
 													(sleep-for 0.1)
 													(kill-buffer)))
 
-				(tt3-property-initialize)))))
+				(tt3-property :initialize)))))
 
 
 (defun tt3-property-local ( node-address key &optional value ) "
