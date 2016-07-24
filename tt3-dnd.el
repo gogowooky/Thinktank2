@@ -89,7 +89,7 @@
 														(cons env-var env-dir)
 
 														)))
-											tt3-config)))
+											tt3-config-data-table)))
 
 
 (defun tt3-dnd-insert-combine-tag-for-download ()

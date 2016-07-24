@@ -12,6 +12,13 @@
 ;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar tt3-config-data-table nil)    ;; システム設定値をproperty-listで保持する。　
+(defvar tt3-property-data-table nil)  ;; 全システムメモをnode単位に分解、( "title" pos "howm filename" ) のlistとして全nodeを保持する。
+
+
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
 ;; thinktank3-config: 
@@ -30,35 +37,45 @@
     (thinktank3-config :memodir \"C:/\")
     (thinktank3-config :delete-key :memodir) "
 
-				(cond ((null key)           tt3-config)
-							((null value)         (assoc-default key tt3-config))
-							((eq key :delete-key) (setq tt3-config (delete* value tt3-config :test (lambda ( x y ) (eq x (car y))))))
-							(t                    (tt3-config :delete-key key) 
-																		(push (cons key value) tt3-config))))
+				(cond ((null key)           tt3-config-data-table)
+							((eq key :set-memodir)
+							 (push (cons :memodir (with-temp-buffer (insert-file-contents (concat (file-name-directory (locate-library "tt.el"))
+																																										"configuration/memodir@" (upcase (system-name))
+																																										".conf"))
+																											(current-line-string))) tt3-config-data-table))
+							((eq key :initialize)
+							 (push (cons :tempdir          (thinktank3-property "Thinktank.Host.thinktank" "tempdir")) tt3-config-data-table)
+							 (push (cons :syncdir          (thinktank3-property "Thinktank.Host.thinktank" "syncdir")) tt3-config-data-table)
+							 (push (cons :baseurl          (thinktank3-property "Thinktank.Host.thinktank" "url")) tt3-config-data-table)
+							 (push (cons :firefox          (thinktank3-property "Thinktank.Host.thinktank" "firefox")) tt3-config-data-table)
+							 (push (cons :template-memo    (thinktank3-property "Thinktank.Template" "memo")) tt3-config-data-table)
+							 (push (cons :template-oneline (thinktank3-property "Thinktank.Template" "oneline")) tt3-config-data-table)
+							 (push (cons :memo             (concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memo")) tt3-config-data-table)
+							 (push (cons :memos            (concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memos")) tt3-config-data-table))
+
+							((eq key :initialize2) (setq tt3-config-data-table `((:memodir . ,tt3-memodir)  ;  (thinktank3-property "Thinktank.Host.thinktank" "memodir")
+																																	(:tempdir . ,(thinktank3-property "Thinktank.Host.thinktank" "tempdir"))
+																																	(:syncdir . ,(thinktank3-property "Thinktank.Host.thinktank" "syncdir"))
+																																	(:baseurl . ,(thinktank3-property "Thinktank.Host.thinktank" "url"))
+																																	(:firefox . ,(thinktank3-property "Thinktank.Host.thinktank" "firefox"))
+																																	(:template-memo    . ,(thinktank3-property "Thinktank.Template" "memo"))
+																																	(:template-oneline . ,(thinktank3-property "Thinktank.Template" "oneline"))
+																																	(:memo    . ,(concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memo"))
+																																	(:memos   . ,(concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memos")))))
+							((null value)         (assoc-default key tt3-config-data-table))
+							((eq key :delete-key) (setq tt3-config-data-table (delete* value tt3-config-data-table :test (lambda ( x y ) (eq x (car y))))))
+							(t                    (thinktank3-config :delete-key key) 
+																		(push (cons key value) tt3-config-data-table))))
 
 
-(defvar tt3-memodir ;; memodirは memodir@MACHINE-NAME.conf ファイルの一行目に書かれているものを用いる。
-	(with-temp-buffer
-		(insert-file-contents (concat (file-name-directory load-file-name)
-																	"configuration/memodir@" (upcase (system-name))
-																	".conf"))
-		(current-line-string)))
-
-(defvar tt3-config nil) ;; 実際には下の処理により左の変数に格納される。
+;(defvar tt3-memodir ;; memodirは memodir@MACHINE-NAME.conf ファイルの一行目に書かれているものを用いる。
+;	(with-temp-buffer
+;		(insert-file-contents (concat (file-name-directory load-file-name)
+;																	"configuration/memodir@" (upcase (system-name))
+;																	".conf"))
+;		(current-line-string)))
 
 
-(setq tt3-config `((:memodir . ,tt3-memodir)  ;  (thinktank3-property "Thinktank.Host.thinktank" "memodir")
-									 (:tempdir . ,(thinktank3-property "Thinktank.Host.thinktank" "tempdir"))
-									 (:syncdir . ,(thinktank3-property "Thinktank.Host.thinktank" "syncdir"))
-									 (:baseurl . ,(thinktank3-property "Thinktank.Host.thinktank" "url"))
-
-									 (:firefox . ,(thinktank3-property "Thinktank.Host.thinktank" "firefox"))
-									 
-									 (:template-memo    . ,(thinktank3-property "Thinktank.Template" "memo"))
-									 (:template-oneline . ,(thinktank3-property "Thinktank.Template" "oneline"))
-
-									 (:memo    . ,(concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memo"))
-									 (:memos   . ,(concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memos"))))
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
@@ -110,12 +127,6 @@
 
 
 
-;;--------------------------------------------------------------------------------------------------------------------------------------------
-;;
-;; グローバル変数
-;;
-;;--------------------------------------------------------------------------------------------------------------------------------------------
-(defvar thinktank3-property-list nil)  ;; 全システムメモをnode単位に分解、( "title" pos "howm filename" ) のlistとして全nodeを保持する。
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
@@ -157,7 +168,7 @@
 	(let ((tt3-property-buffer-name "*prop-buf3*"))  ;; このバッファー上に全system memoが読み込まれる。
 
 		(case action
-			(:values thinktank3-property-list)
+			(:values tt3-property-data-table)
 			(:buffer (or (get-buffer tt3-property-buffer-name)
 									 (progn (tt3-property :initialize) (get-buffer tt3-property-buffer-name))))
 
@@ -165,8 +176,8 @@
 									 ;; 全system file読み込む --------------------------------------------------------------------------------------------------------------------
 									 (save-excursion
 										 (set-buffer (generate-new-buffer tt3-property-buffer-name))
-										 (loop for dir in (sort (directory-files tt3-memodir) 'string<)
-													 for fil = (condition-case nil (concat tt3-memodir dir "/" (substring dir -17) ".howm") (error "_"))
+										 (loop for dir in (sort (directory-files (thinktank3-config :memodir)) 'string<)
+													 for fil = (condition-case nil (concat (thinktank3-config :memodir) dir "/" (substring dir -17) ".howm") (error "_"))
 													 if (file-exists-p fil)
 													 do (progn (insert (format "\n* ======== %s.howm ========\n" (substring dir -17)))
 																		 (insert-file-contents fil)
@@ -189,7 +200,7 @@
 																																		 (when (= lvl elemlvl) (cons (list (substring elemttl 1) elempos orig)
 																																																 (get-node-heading-and-pos (+ 1 lvl) elemttl orig)))))))
 											 ;; 最後のｱｲﾃﾑで抜け出せなくなる
-											 (setq thinktank3-property-list (get-node-heading-and-pos 1 "" "")))))
+											 (setq tt3-property-data-table (get-node-heading-and-pos 1 "" "")))))
 			)))
 		
 
@@ -201,7 +212,7 @@
          title:            node addr   ex)Extension.Queries.Memo.All
          parent-node-addr: 親のアドレス "
 	`(with-current-buffer (thinktank3-property :buffer)
-		 (loop for ( title pos orig-filename ) in thinktank3-property-list
+		 (loop for ( title pos orig-filename ) in tt3-property-data-table
 					 with regexp = ,(concat "^" (regexp-quote parent-node-addr) "\\.[a-zA-Z0-9_\\.\\-]+$")
 					 if (string-match regexp title)
 					 collect (unwind-protect (save-excursion (save-restriction (goto-char pos) (beginning-of-line) (org-narrow-to-subtree) ,@body)) (widen)))))
@@ -216,7 +227,7 @@
 * [説明] node-addr指定に該当する複数nodeをnarrowingして巡回し、bodyで評価した値をlistで返すマクロ"
 	
 	`(with-current-buffer (thinktank3-property :buffer)
-		 (loop for ( title pos orig-filename ) in thinktank3-property-list
+		 (loop for ( title pos orig-filename ) in tt3-property-data-table
 					 with node-addr = ,node-addr
 					 if (equal title node-addr)
 					 collect (unwind-protect (save-excursion (save-restriction (goto-char pos) (beginning-of-line) (org-narrow-to-subtree) ,@body)) (widen)))))
@@ -227,7 +238,7 @@
 * [説明] node-addrで指定されるnodeをnarrowingし、body評価が非nilの場合、( original-filename . pos )を返す "
 	(when (and (tt3-tt3-property-get-element elemtype key) orig-filename pos) 
 		(cons orig-filename (- pos 
-													 (car (assoc-default (format "======== %s ========" orig-filename) thinktank3-property-list))
+													 (car (assoc-default (format "======== %s ========" orig-filename) tt3-property-data-table))
 													 42))))
 
 (defun tt3-tt3-property-get-element ( elemtype &optional key ) "
@@ -311,14 +322,6 @@
 										(prog1 (cond (value (prog1 (org-entry-put nil key value) (save-buffer) (sleep-for 0.1)))
 																 (t     (progn (org-entry-get nil key))))
 											(kill-buffer)))))
-
-
-
-
-
-
-
-
 
 
 (provide 'tt3-system)
