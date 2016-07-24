@@ -9,6 +9,8 @@
 ;; Public
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
+;; (tt:start-webrick)
+;; 
 ;; (tt:resource-index &rest plist )
 ;;
 ;; (tt:resource-reload)           (interactive)
@@ -28,11 +30,52 @@
 
 
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; コマンド 
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; webrick serverを走らせる
+;;
+(defun tt:start-webrick () (interactive) (tt3-resource-start-webrick "version2.1"))
+
+(defun tt3-resource-start-webrick ( &optional option ) (interactive) "* [説明] webrickを起動する。"
+	(unless (tt:resource-check-server) ;; local server未起動時に実行
+		
+		;; w32/nsではtt.elのディレクトリにバッチファイルを作成する。
+		(setq default-directory (file-name-directory (locate-library "tt.el"))) 
+		
+		;; emacs子プロセスではなく、起動したshell窓内でserver起動する
+		(case (window-system)
+			('w32 (defun set-shell-cmdproxy()
+							(interactive)
+							(setq shell-file-name "cmdproxy")
+							(setq explicit-shell-file-name "cmdproxy")
+							(setenv "SHELL" explicit-shell-file-name)
+							(setq w32-quote-process-args t)
+							(setq shell-command-switch "-c")
+							)
+						(set-shell-cmdproxy)
+						(with-temp-file (concat default-directory "thinktank.bat")
+							(insert (format "%s:\n" (substring default-directory 0 1))
+											(format "cd %s\n" default-directory)
+											(format "ruby thinktank.rb %s" option)))
+						(start-process-shell-command "thinktank-server" nil "start cmd.exe /k thinktank.bat"))
+			;;(shell-command "start cmd.exe /k thinktank.bat"))
+			
+			('ns  (with-temp-file (concat default-directory "thinktank.applescript")
+							(insert "tell application \"Terminal\"\n"
+											"do script \"echo dummy\"\n"
+											(format "do script \"cd %s\" in window 1\n" default-directory)
+											(format "do script \"ruby thinktank.rb %s\" in window 1\n" option)
+											"end tell\n"))
+						(cd default-directory)
+						(shell-command (format "/usr/bin/osascript %sthinktank.applescript" default-directory)))
+			
+			('x (start-process-shell-command "xfce" nil (format "xfce4-terminal --working-directory='%s' -H --command='ruby thinktank.rb %s'" default-directory option))))))
+
 ;;
 ;; メモを列挙する
 ;;
@@ -429,8 +472,6 @@
 
 
 
-
-
 ;;
 ;;
 ;;
@@ -623,8 +664,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;
 ;; webrickへ直接アクセス。　http-requestを出す
 ;;
@@ -716,6 +755,8 @@
 																																				 (2 (cons (car tmp) (cadr tmp))))))))
 																	response)
 															(error "error" '(("Status" . "error"))))))))
+
+
 
 
 (provide 'tt3-resource)

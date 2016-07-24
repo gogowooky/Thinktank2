@@ -115,7 +115,7 @@
 ;; #+BEGIN_SRC thinktank ... #+END
 (defvar org-babel-default-header-args:thinktank '((:results . "output silent") (:exports . "none" )))
 (defun org-babel-execute:thinktank ( body params )
-	(thinktank3-property :reset)
+	(thinktank3-property :initialize)
 	(thinktank3-resource-index :lookup body
 														 :name   "thinktank"
 														 ;; 同chapterのproperty値を引数にとる
@@ -133,7 +133,7 @@
 (defvar org-babel-default-header-args:mozrepl '((:results . "output silent") (:exports . "none" )))
 (defun org-babel-execute:mozrepl ( body params )
 	(tt3-mozrepl-open-firefox)
-	(thinktank3-property :reset)
+	(thinktank3-property :initialize)
 	(tt3-mozrepl-request body))
 
 

@@ -6,10 +6,69 @@
 ;; Public
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
+;; (thinktank3-format   &optional param )
 ;; (thinktank3-property &optional node-address key value )
-;; (thinktank3-config &optional key value )
-;; (thinktank3-format &optional param )
+;; (thinktank3-config   &optional key value )
 ;;
+
+
+;;--------------------------------------------------------------------------------------------------------------------------------------------
+;;
+;; thinktank3-format
+;;
+;;--------------------------------------------------------------------------------------------------------------------------------------------
+(defun* thinktank3-format ( type &optional param ) "
+* [説明] thinktank関連のID文字列を作成する。
+  [引数]
+    type     :memoid, :memofile, :memodir, :memopath, :memotitle, :logfile, :logpath, :tmpdir, :logpath-wc
+    memoid   :now, xxxx-xx-xx-xxxxxx(を含む文字列), :home, nil
+  [用例]
+    (thinktank3-format :tmpdir)
+    (thinktank3-format :rememoid \"0000-00-00-000000\")
+    (thinktank3-format :memopath \"0000-00-00-000001.dic\")
+    (thinktank3-format :logpath  \"1999-08-01-000000\") "
+
+				(let (year month day hms memodir logdir logid tmpdir baseurl memoid)
+					(setq memoid param)
+					(setq tmpdir (convert-standard-filename (thinktank3-config :tempdir)))
+					(case type
+						(:tmpdir  tmpdir)
+						(t
+						 (when (setq memoid (cond ((equal   memoid :now) (format-time-string "%Y-%m-%d-%H%M%S"))
+																			((assoc-default memoid (thinktank3-config :memoalias)))
+																			((stringp memoid)      (and (string-match "[0-9][0-9][0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9][0-9][0-9][0-9][0-9]" memoid)
+																																	(match-string 0 memoid)))))
+							 (setq year  (substring memoid 0 4))
+							 (setq month (substring memoid 5 7))
+							 (setq day   (substring memoid 8 10))
+							 (setq hms   (substring memoid 11))
+							 (case type
+								 (:rememoid (format "%s\\-%s\\-%s\\-%s" year month day hms))
+								 (t
+									(setq memodir (convert-standard-filename (concat (thinktank3-config :memodir) (if (string-match "0000" year) (format "%s/" memoid) (format "%s/%s/%s/" year month memoid)))))
+									(setq logdir  (convert-standard-filename (concat (thinktank3-config :memodir) (unless (string-match "0000" year) (format "%s/%s/" year month)))))
+									(case type
+										(:memoid     memoid)
+										(:memofile   (concat memoid ".howm"))
+										(:memodir    memodir)
+										(:memopath   (concat memodir memoid ".howm"))
+										(:memolink   (cons (concat memoid ".howm") (and (string-match (concat memoid "\\.howm::\\([^ 　\t]+\\)") param) (match-string 1 param))))
+										(:memotitle  (with-temp-buffer (ignore-errors (insert-file-contents (concat memodir memoid ".howm"))
+																																	(buffer-substring (progn (beginning-of-buffer) (point)) (progn (end-of-line) (point))))))
+										(:logfile    (concat memoid ".log"))
+										(:logpath    (concat logdir memoid ".log"))
+										(:logpath-wc (concat logdir (format "%s-%s-%s-??????.log" year month day)))))))))))
+
+
+
+
+;;--------------------------------------------------------------------------------------------------------------------------------------------
+;;
+;; グローバル変数
+;;
+;;--------------------------------------------------------------------------------------------------------------------------------------------
+(defvar thinktank3-property-list nil)  ;; 全システムメモをnode単位に分解、( "title" pos "howm filename" ) のlistとして全nodeを保持する。
+(defvar thinktank3-config-list nil)    ;; propertyから抽出したconfig値を保持する。
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
@@ -17,21 +76,20 @@
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 
-
 (defun thinktank3-property ( &optional node-address key value ) "
 * [説明] node-addressで指定されるkeyの値を取得またはvalueに書き換える。
   [例]  (thinktank3-property \"Thinktank.Host.thinktank\" \"url\" )
 "
-	(cond ((equal node-address :reset)  (tt3-property :initialize))                            ;; 次回更新
-				((equal node-address :buffer) (tt3-property :buffer))                                ;; buffer取得
-				((stringp node-address)       ;; (thinktank3-property "Thinktank.Host.thinktank" "url")
-				 (cond ((equal key :keyword) 	 (last-tt3-property-node node-address  (tt3-tt3-property-get-element :keyword value)))             ;; keywordのvalueを返す ( #+KEY: VALUE の形式 )
-							 ((equal key :src-block) (last-tt3-property-node node-address  (tt3-tt3-property-get-element :src-block)))                 ;; src-blockのvalueを返す ( #+begin_src のみ )
-							 ((equal key :text)      (last-tt3-property-node node-address  (tt3-tt3-property-get-element :paragraph)))                 ;; paragraphを返す
+	(cond ((equal node-address :initialize) (tt3-property :initialize)) ;; 次回更新
+				((equal node-address :buffer) (tt3-property :buffer))         ;; buffer取得
+				((stringp node-address)                                       ;; property
+				 (cond ((equal key :keyword) 	 (tt3-last-property-node node-address  (tt3-tt3-property-get-element :keyword value)))             ;; keywordのvalueを返す ( #+KEY: VALUE の形式 )
+							 ((equal key :src-block) (tt3-last-property-node node-address  (tt3-tt3-property-get-element :src-block)))                 ;; src-blockのvalueを返す ( #+begin_src のみ )
+							 ((equal key :text)      (tt3-last-property-node node-address  (tt3-tt3-property-get-element :paragraph)))                 ;; paragraphを返す
 							 ((equal key :json)      (json-read-from-string 
-																				(last-tt3-property-node node-address (tt3-tt3-property-get-element :paragraph))))                ;; paragraphをjsonとして読み出す              
+																				(tt3-last-property-node node-address (tt3-tt3-property-get-element :paragraph))))                ;; paragraphをjsonとして読み出す              
 							 ((stringp key)          (let* (prop)
-																				 (setq prop (last-tt3-property-node node-address (tt3-tt3-property-get-element :property key)))  ;; 以下propertyの編集
+																				 (setq prop (tt3-last-property-node node-address (tt3-tt3-property-get-element :property key)))  ;; 以下propertyの編集
 																				 (if (equal prop ":local")                                                  ;; valueが:localの場合、system memoではなくtmpdir/node-address.howmにある値を使う
 																						 (cond ((equal value :delete) (tt3-property-local node-address key nil))          ;; key削除
 																									 ((stringp value)       (tt3-property-local node-address key value))        ;; key値変更
@@ -44,8 +102,6 @@
 				))
 
 
-(defvar tt3-property-list nil)                       ;; 上バッファーをnode単位に分解、( "title" pos "howm filename" ) のlistとして全nodeを保持する。
-
 (defun* tt3-property ( &optional action ) "
 * [説明] system memoをloadし、全propertyを読み込む。
          propertyは ( node-address  node-position  origin-file ) の list として保存されている。
@@ -54,7 +110,7 @@
 	(let ((tt3-property-buffer-name "*prop-buf3*"))  ;; このバッファー上に全system memoが読み込まれる。
 
 		(case action
-			(:values tt3-property-list)
+			(:values thinktank3-property-list)
 			(:buffer (or (get-buffer tt3-property-buffer-name)
 									 (progn (tt3-property :initialize) (get-buffer tt3-property-buffer-name))))
 
@@ -86,35 +142,33 @@
 																																		 (when (= lvl elemlvl) (cons (list (substring elemttl 1) elempos orig)
 																																																 (get-node-heading-and-pos (+ 1 lvl) elemttl orig)))))))
 											 ;; 最後のｱｲﾃﾑで抜け出せなくなる
-											 (setq tt3-property-list (get-node-heading-and-pos 1 "" "")))))
-			)))
+											 (setq thinktank3-property-list (get-node-heading-and-pos 1 "" ""))))))))
 		
 
 
-
 ;; 以下３つはlist内の指定nodeを回すマクロ
-(defmacro mapcar-tt3-property-subnode ( parent-node-addr &rest body ) "
+(defmacro tt3-mapcar-property-subnode ( parent-node-addr &rest body ) "
 * [説明] parent-node-addr配下のsubnodeをnarrowingして巡回し、bodyを評価した値をlistで返すマクロ
          body内で以下の変数が使える
          title:            node addr   ex)Extension.Queries.Memo.All
          parent-node-addr: 親のアドレス "
 	`(with-current-buffer (thinktank3-property :buffer)
-		 (loop for ( title pos orig-filename ) in tt3-property-list
+		 (loop for ( title pos orig-filename ) in thinktank3-property-list
 					 with regexp = ,(concat "^" (regexp-quote parent-node-addr) "\\.[a-zA-Z0-9_\\.\\-]+$")
 					 if (string-match regexp title)
 					 collect (unwind-protect (save-excursion (save-restriction (goto-char pos) (beginning-of-line) (org-narrow-to-subtree) ,@body)) (widen)))))
 
 
-(defmacro last-tt3-property-node ( node-addr &rest body ) "
-* [説明] mapcar-tt3-property-node でbodyを評価して得たlistの、最後の非nil値を返すマクロ"
-	`(car (last (delq nil (mapcar-tt3-property-node ,node-addr ,@body)))))
+(defmacro tt3-last-property-node ( node-addr &rest body ) "
+* [説明] tt3-mapcar-property-node でbodyを評価して得たlistの、最後の非nil値を返すマクロ"
+	`(car (last (delq nil (tt3-mapcar-property-node ,node-addr ,@body)))))
 
 
-(defmacro mapcar-tt3-property-node ( node-addr &rest body ) "
+(defmacro tt3-mapcar-property-node ( node-addr &rest body ) "
 * [説明] node-addr指定に該当する複数nodeをnarrowingして巡回し、bodyで評価した値をlistで返すマクロ"
 	
 	`(with-current-buffer (thinktank3-property :buffer)
-		 (loop for ( title pos orig-filename ) in tt3-property-list
+		 (loop for ( title pos orig-filename ) in thinktank3-property-list
 					 with node-addr = ,node-addr
 					 if (equal title node-addr)
 					 collect (unwind-protect (save-excursion (save-restriction (goto-char pos) (beginning-of-line) (org-narrow-to-subtree) ,@body)) (widen)))))
@@ -125,7 +179,7 @@
 * [説明] node-addrで指定されるnodeをnarrowingし、body評価が非nilの場合、( original-filename . pos )を返す "
 	(when (and (tt3-tt3-property-get-element elemtype key) orig-filename pos) 
 		(cons orig-filename (- pos 
-													 (car (assoc-default (format "======== %s ========" orig-filename) tt3-property-list))
+													 (car (assoc-default (format "======== %s ========" orig-filename) thinktank3-property-list))
 													 42))))
 
 (defun tt3-tt3-property-get-element ( elemtype &optional key ) "
@@ -179,8 +233,8 @@
 	(if (and (stringp key) (equal ":local" (thinktank3-property node-address key)))
 			(tt3-property-local node-address key value)
 
-		(destructuring-bind ( filename . pos ) (or (last-tt3-property-node node-address (tt3-tt3-property-get-original-info :property key)) ;; 既存key
-																							 (last-tt3-property-node node-address (tt3-tt3-property-get-original-info :node)))        ;; 新規key
+		(destructuring-bind ( filename . pos ) (or (tt3-last-property-node node-address (tt3-tt3-property-get-original-info :property key)) ;; 既存key
+																							 (tt3-last-property-node node-address (tt3-tt3-property-get-original-info :node)))        ;; 新規key
 			(when pos
 				(if (get-buffer filename)
 						(with-current-buffer filename 
@@ -264,53 +318,6 @@
 									 (:memos   . ,(concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memos"))))
 
 
-;;--------------------------------------------------------------------------------------------------------------------------------------------
-;;
-;; thinktank3-format
-;;
-;;--------------------------------------------------------------------------------------------------------------------------------------------
-
-(defun* thinktank3-format ( type &optional param ) "
-* [説明] thinktank関連のID文字列を作成する。
-  [引数]
-    type     :memoid, :memofile, :memodir, :memopath, :memotitle, :logfile, :logpath, :tmpdir, :logpath-wc
-    memoid   :now, xxxx-xx-xx-xxxxxx(を含む文字列), :home, nil
-  [用例]
-    (thinktank3-format :tmpdir)
-    (thinktank3-format :rememoid \"0000-00-00-000000\")
-    (thinktank3-format :memopath \"0000-00-00-000001.dic\")
-    (thinktank3-format :logpath  \"1999-08-01-000000\") "
-
-				(let (year month day hms memodir logdir logid tmpdir baseurl memoid)
-					(setq memoid param)
-					(setq tmpdir (convert-standard-filename (thinktank3-config :tempdir)))
-					(case type
-						(:tmpdir  tmpdir)
-						(t
-						 (when (setq memoid (cond ((equal   memoid :now) (format-time-string "%Y-%m-%d-%H%M%S"))
-																			((assoc-default memoid (thinktank3-config :memoalias)))
-																			((stringp memoid)      (and (string-match "[0-9][0-9][0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9]\\-[0-9][0-9][0-9][0-9][0-9][0-9]" memoid)
-																																	(match-string 0 memoid)))))
-							 (setq year  (substring memoid 0 4))
-							 (setq month (substring memoid 5 7))
-							 (setq day   (substring memoid 8 10))
-							 (setq hms   (substring memoid 11))
-							 (case type
-								 (:rememoid (format "%s\\-%s\\-%s\\-%s" year month day hms))
-								 (t
-									(setq memodir (convert-standard-filename (concat (thinktank3-config :memodir) (if (string-match "0000" year) (format "%s/" memoid) (format "%s/%s/%s/" year month memoid)))))
-									(setq logdir  (convert-standard-filename (concat (thinktank3-config :memodir) (unless (string-match "0000" year) (format "%s/%s/" year month)))))
-									(case type
-										(:memoid     memoid)
-										(:memofile   (concat memoid ".howm"))
-										(:memodir    memodir)
-										(:memopath   (concat memodir memoid ".howm"))
-										(:memolink   (cons (concat memoid ".howm") (and (string-match (concat memoid "\\.howm::\\([^ 　\t]+\\)") param) (match-string 1 param))))
-										(:memotitle  (with-temp-buffer (ignore-errors (insert-file-contents (concat memodir memoid ".howm"))
-																																	(buffer-substring (progn (beginning-of-buffer) (point)) (progn (end-of-line) (point))))))
-										(:logfile    (concat memoid ".log"))
-										(:logpath    (concat logdir memoid ".log"))
-										(:logpath-wc (concat logdir (format "%s-%s-%s-??????.log" year month day)))))))))))
 
 
 

@@ -1,8 +1,8 @@
 ;; tt-webrick.l; -*- mode: emacs-lisp; coding: utf-8 -*-
 
-(defun tt:start-webrick () (tt3-system-open-webrick "version2.1"))
+(defun tt:start-webrick () (tt3-resource-start-webrick "version2.1"))
 
-(defun tt3-system-open-webrick ( &optional option ) (interactive) "
+(defun tt3-resource-start-webrick ( &optional option ) (interactive) "
 * [説明] webrickを起動する。
   [注意] win/macではscriptのあるディレクトリにバッチファイルを作成する。"
 	(progn
