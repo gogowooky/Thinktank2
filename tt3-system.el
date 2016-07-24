@@ -6,17 +6,66 @@
 ;; Public
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
+;; (thinktank3-config   &optional key value )
 ;; (thinktank3-format   &optional param )
 ;; (thinktank3-property &optional node-address key value )
-;; (thinktank3-config   &optional key value )
 ;;
 
+
+;;--------------------------------------------------------------------------------------------------------------------------------------------
+;;
+;; thinktank3-config: 
+;;
+;;--------------------------------------------------------------------------------------------------------------------------------------------
+
+;;
+;; システム設定値を返す。
+;;
+(defun* thinktank3-config ( &optional key value ) "
+* [説明] system起動に必要な propertyを thinktank起動時に読み取りconfig値として保持している。
+         nest無しの単純alist。
+  [用例]
+    (thinktank3-config)
+    (thinktank3-config :memodir)
+    (thinktank3-config :memodir \"C:/\")
+    (thinktank3-config :delete-key :memodir) "
+
+				(cond ((null key)           tt3-config)
+							((null value)         (assoc-default key tt3-config))
+							((eq key :delete-key) (setq tt3-config (delete* value tt3-config :test (lambda ( x y ) (eq x (car y))))))
+							(t                    (tt3-config :delete-key key) 
+																		(push (cons key value) tt3-config))))
+
+
+(defvar tt3-memodir ;; memodirは memodir@MACHINE-NAME.conf ファイルの一行目に書かれているものを用いる。
+	(with-temp-buffer
+		(insert-file-contents (concat (file-name-directory load-file-name)
+																	"configuration/memodir@" (upcase (system-name))
+																	".conf"))
+		(current-line-string)))
+
+(defvar tt3-config nil) ;; 実際には下の処理により左の変数に格納される。
+
+
+(setq tt3-config `((:memodir . ,tt3-memodir)  ;  (thinktank3-property "Thinktank.Host.thinktank" "memodir")
+									 (:tempdir . ,(thinktank3-property "Thinktank.Host.thinktank" "tempdir"))
+									 (:syncdir . ,(thinktank3-property "Thinktank.Host.thinktank" "syncdir"))
+									 (:baseurl . ,(thinktank3-property "Thinktank.Host.thinktank" "url"))
+
+									 (:firefox . ,(thinktank3-property "Thinktank.Host.thinktank" "firefox"))
+									 
+									 (:template-memo    . ,(thinktank3-property "Thinktank.Template" "memo"))
+									 (:template-oneline . ,(thinktank3-property "Thinktank.Template" "oneline"))
+
+									 (:memo    . ,(concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memo"))
+									 (:memos   . ,(concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memos"))))
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
 ;; thinktank3-format
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
+
 (defun* thinktank3-format ( type &optional param ) "
 * [説明] thinktank関連のID文字列を作成する。
   [引数]
@@ -61,14 +110,12 @@
 
 
 
-
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
 ;; グローバル変数
 ;;
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 (defvar thinktank3-property-list nil)  ;; 全システムメモをnode単位に分解、( "title" pos "howm filename" ) のlistとして全nodeを保持する。
-(defvar thinktank3-config-list nil)    ;; propertyから抽出したconfig値を保持する。
 
 ;;--------------------------------------------------------------------------------------------------------------------------------------------
 ;;
@@ -80,16 +127,16 @@
 * [説明] node-addressで指定されるkeyの値を取得またはvalueに書き換える。
   [例]  (thinktank3-property \"Thinktank.Host.thinktank\" \"url\" )
 "
-	(cond ((equal node-address :initialize) (tt3-property :initialize)) ;; 次回更新
-				((equal node-address :buffer) (tt3-property :buffer))         ;; buffer取得
-				((stringp node-address)                                       ;; property
-				 (cond ((equal key :keyword) 	 (tt3-last-property-node node-address  (tt3-tt3-property-get-element :keyword value)))             ;; keywordのvalueを返す ( #+KEY: VALUE の形式 )
-							 ((equal key :src-block) (tt3-last-property-node node-address  (tt3-tt3-property-get-element :src-block)))                 ;; src-blockのvalueを返す ( #+begin_src のみ )
-							 ((equal key :text)      (tt3-last-property-node node-address  (tt3-tt3-property-get-element :paragraph)))                 ;; paragraphを返す
+	(cond ((equal node-address :initialize)  (tt3-property :initialize))  ;; 次回更新
+				((equal node-address :buffer) (tt3-property :buffer))           ;; buffer取得
+				((stringp node-address)       ;; (thinktank3-property "Thinktank.Host.thinktank" "url")
+				 (cond ((equal key :keyword) 	 (last-tt3-property-node node-address  (tt3-tt3-property-get-element :keyword value)))             ;; keywordのvalueを返す ( #+KEY: VALUE の形式 )
+							 ((equal key :src-block) (last-tt3-property-node node-address  (tt3-tt3-property-get-element :src-block)))                 ;; src-blockのvalueを返す ( #+begin_src のみ )
+							 ((equal key :text)      (last-tt3-property-node node-address  (tt3-tt3-property-get-element :paragraph)))                 ;; paragraphを返す
 							 ((equal key :json)      (json-read-from-string 
-																				(tt3-last-property-node node-address (tt3-tt3-property-get-element :paragraph))))                ;; paragraphをjsonとして読み出す              
+																				(last-tt3-property-node node-address (tt3-tt3-property-get-element :paragraph))))                ;; paragraphをjsonとして読み出す              
 							 ((stringp key)          (let* (prop)
-																				 (setq prop (tt3-last-property-node node-address (tt3-tt3-property-get-element :property key)))  ;; 以下propertyの編集
+																				 (setq prop (last-tt3-property-node node-address (tt3-tt3-property-get-element :property key)))  ;; 以下propertyの編集
 																				 (if (equal prop ":local")                                                  ;; valueが:localの場合、system memoではなくtmpdir/node-address.howmにある値を使う
 																						 (cond ((equal value :delete) (tt3-property-local node-address key nil))          ;; key削除
 																									 ((stringp value)       (tt3-property-local node-address key value))        ;; key値変更
@@ -142,12 +189,13 @@
 																																		 (when (= lvl elemlvl) (cons (list (substring elemttl 1) elempos orig)
 																																																 (get-node-heading-and-pos (+ 1 lvl) elemttl orig)))))))
 											 ;; 最後のｱｲﾃﾑで抜け出せなくなる
-											 (setq thinktank3-property-list (get-node-heading-and-pos 1 "" ""))))))))
+											 (setq thinktank3-property-list (get-node-heading-and-pos 1 "" "")))))
+			)))
 		
 
 
 ;; 以下３つはlist内の指定nodeを回すマクロ
-(defmacro tt3-mapcar-property-subnode ( parent-node-addr &rest body ) "
+(defmacro mapcar-tt3-property-subnode ( parent-node-addr &rest body ) "
 * [説明] parent-node-addr配下のsubnodeをnarrowingして巡回し、bodyを評価した値をlistで返すマクロ
          body内で以下の変数が使える
          title:            node addr   ex)Extension.Queries.Memo.All
@@ -159,12 +207,12 @@
 					 collect (unwind-protect (save-excursion (save-restriction (goto-char pos) (beginning-of-line) (org-narrow-to-subtree) ,@body)) (widen)))))
 
 
-(defmacro tt3-last-property-node ( node-addr &rest body ) "
-* [説明] tt3-mapcar-property-node でbodyを評価して得たlistの、最後の非nil値を返すマクロ"
-	`(car (last (delq nil (tt3-mapcar-property-node ,node-addr ,@body)))))
+(defmacro last-tt3-property-node ( node-addr &rest body ) "
+* [説明] mapcar-tt3-property-node でbodyを評価して得たlistの、最後の非nil値を返すマクロ"
+	`(car (last (delq nil (mapcar-tt3-property-node ,node-addr ,@body)))))
 
 
-(defmacro tt3-mapcar-property-node ( node-addr &rest body ) "
+(defmacro mapcar-tt3-property-node ( node-addr &rest body ) "
 * [説明] node-addr指定に該当する複数nodeをnarrowingして巡回し、bodyで評価した値をlistで返すマクロ"
 	
 	`(with-current-buffer (thinktank3-property :buffer)
@@ -233,8 +281,8 @@
 	(if (and (stringp key) (equal ":local" (thinktank3-property node-address key)))
 			(tt3-property-local node-address key value)
 
-		(destructuring-bind ( filename . pos ) (or (tt3-last-property-node node-address (tt3-tt3-property-get-original-info :property key)) ;; 既存key
-																							 (tt3-last-property-node node-address (tt3-tt3-property-get-original-info :node)))        ;; 新規key
+		(destructuring-bind ( filename . pos ) (or (last-tt3-property-node node-address (tt3-tt3-property-get-original-info :property key)) ;; 既存key
+																							 (last-tt3-property-node node-address (tt3-tt3-property-get-original-info :node)))        ;; 新規key
 			(when pos
 				(if (get-buffer filename)
 						(with-current-buffer filename 
@@ -268,54 +316,6 @@
 
 
 
-
-;;--------------------------------------------------------------------------------------------------------------------------------------------
-;;
-;; thinktank3-config: 
-;;
-;;--------------------------------------------------------------------------------------------------------------------------------------------
-
-;;
-;; システム設定値を返す。
-;;
-(defun* thinktank3-config ( &optional key value ) "
-* [説明] system起動に必要な propertyを thinktank起動時に読み取りconfig値として保持している。
-         nest無しの単純alist。
-  [用例]
-    (thinktank3-config)
-    (thinktank3-config :memodir)
-    (thinktank3-config :memodir \"C:/\")
-    (thinktank3-config :delete-key :memodir) "
-
-				(cond ((null key)           tt3-config)
-							((null value)         (assoc-default key tt3-config))
-							((eq key :delete-key) (setq tt3-config (delete* value tt3-config :test (lambda ( x y ) (eq x (car y))))))
-							(t                    (tt3-config :delete-key key) 
-																		(push (cons key value) tt3-config))))
-
-
-(defvar tt3-memodir ;; memodirは memodir@MACHINE-NAME.conf ファイルの一行目に書かれているものを用いる。
-	(with-temp-buffer
-		(insert-file-contents (concat (file-name-directory load-file-name)
-																	"configuration/memodir@" (upcase (system-name))
-																	".conf"))
-		(current-line-string)))
-
-(defvar tt3-config nil) ;; 実際には下の処理により左の変数に格納される。
-
-
-(setq tt3-config `((:memodir . ,tt3-memodir)  ;  (thinktank3-property "Thinktank.Host.thinktank" "memodir")
-									 (:tempdir . ,(thinktank3-property "Thinktank.Host.thinktank" "tempdir"))
-									 (:syncdir . ,(thinktank3-property "Thinktank.Host.thinktank" "syncdir"))
-									 (:baseurl . ,(thinktank3-property "Thinktank.Host.thinktank" "url"))
-
-									 (:firefox . ,(thinktank3-property "Thinktank.Host.thinktank" "firefox"))
-									 
-									 (:template-memo    . ,(thinktank3-property "Thinktank.Template" "memo"))
-									 (:template-oneline . ,(thinktank3-property "Thinktank.Template" "oneline"))
-
-									 (:memo    . ,(concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memo"))
-									 (:memos   . ,(concat (thinktank3-property "Thinktank.Host.thinktank" "url") "memos"))))
 
 
 

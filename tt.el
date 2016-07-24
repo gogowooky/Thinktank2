@@ -128,7 +128,7 @@
 
 
 (defun tt-hook-search-engine-to-menu ()	;; web search engine の登録
-	(tt3-mapcar-property-subnode "Menu.WebSearch"
+	(mapcar-tt3-property-subnode "Menu.WebSearch"
 															 (let ((menu (org-entry-get nil "menu"))
 																		 (url  (org-entry-get nil "url")) 
 																		 (help (org-entry-get nil "help")))
@@ -145,7 +145,7 @@
 
 
 (defun tt-hook-query-to-menu ()	;; Query 関連の登録
-	(tt3-mapcar-property-subnode "Menu.Query"
+	(mapcar-tt3-property-subnode "Menu.Query"
 															 (let* ((menu (org-entry-get nil "menu"))
 																			(help (org-entry-get nil "help")))
 																 (when menu (thinktank3-menu-add `(,menu
@@ -156,7 +156,7 @@
 (add-hook 'thinktank3-menu-after-initialize-hook 'tt-hook-query-to-menu)
 
 (defun tt-hook-mozrepl-to-menu ()	;; MozRepl 関連の登録
-	'(tt3-mapcar-property-subnode "Menu.Mozrepl"
+	'(mapcar-tt3-property-subnode "Menu.Mozrepl"
 																(let* ((menu (org-entry-get nil "menu"))
 																			 (help (org-entry-get nil "help"))
 																			 (code (trim-string (tt3-tt3-property-get-element :src-block))))
@@ -182,7 +182,7 @@
 ;; WebSearchEnginesをorg-link-abbrev-alistに登録
 ;; 文中 [[google:orexin leptin]] で検索できるようになる。
 (setq org-link-abbrev-alist nil)
-(tt3-mapcar-property-subnode "Menu.WebSearch" 
+(mapcar-tt3-property-subnode "Menu.WebSearch" 
 														 (when (org-entry-get nil "orgtag")
 															 (push (cons (org-entry-get nil "orgtag") (replace-regexp-in-string "%input" "%s" (org-entry-get nil "url"))) org-link-abbrev-alist)))
 

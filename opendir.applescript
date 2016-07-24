@@ -1,4 +1,4 @@
 tell application "Terminal"
 do script "echo dummy"
-do script "cd /Users/gogowooky/Dropbox/MyJobs/Thinktank3/" in window 1
+do script "cd /Users/gogowooky/Dropbox/MyJobs/Thinktank2/" in window 1
 end tell
